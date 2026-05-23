@@ -20,14 +20,14 @@ describe('parseSettings', () => {
       engineEnabled: false,
       evaluationIntervalMinutes: 15,
       graveyardRetentionDays: 30,
-      rules: ['discard inactive>2h', ''],
+      rules: ['close inactive>2h', ''],
     })
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.settings.engineEnabled).toBe(false)
       expect(result.settings.evaluationIntervalMinutes).toBe(15)
       expect(result.settings.graveyardRetentionDays).toBe(30)
-      expect(result.settings.rules).toEqual(['discard inactive>2h'])
+      expect(result.settings.rules).toEqual(['close inactive>2h'])
     }
   })
 

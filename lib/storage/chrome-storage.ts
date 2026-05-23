@@ -34,6 +34,11 @@ function storageSet(items: Record<string, unknown>): Promise<void> {
   })
 }
 
+export async function readSettingsRaw(): Promise<unknown> {
+  const result = await storageGet<unknown>(STORAGE_KEYS.settings)
+  return result[STORAGE_KEYS.settings]
+}
+
 export async function readSettings(): Promise<Settings> {
   const result = await storageGet<unknown>(STORAGE_KEYS.settings)
   const parsed = parseSettings(result[STORAGE_KEYS.settings])

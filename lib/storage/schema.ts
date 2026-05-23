@@ -4,7 +4,8 @@ export const EVALUATION_INTERVALS: readonly EvaluationIntervalMinutes[] = [
   1, 5, 15, 30, 60,
 ] as const
 
-export type LifecycleAction = 'protect' | 'archive' | 'close' | 'discard'
+/** close = remove tab + graveyard; discard = remove tab only; keep = no removal */
+export type LifecycleAction = 'keep' | 'close' | 'discard'
 
 export type Settings = {
   engineEnabled: boolean
@@ -19,7 +20,7 @@ export type GraveyardEntry = {
   title: string
   favicon?: string
   closedAt: number
-  action: 'close' | 'archive'
+  action: 'close'
   ruleText: string
 }
 
