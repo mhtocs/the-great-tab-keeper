@@ -1,4 +1,5 @@
 import { createEvaluationCyclePorts } from './evaluation-ports'
+import { registerSchedulerListeners, rescheduleEvaluationAlarm } from './scheduler'
 import { syncTabActivated, syncTabRemoved } from '../lib/activity/sync'
 import { runEvaluationCycle } from '../lib/engine/evaluation-cycle'
 import { initialSettings, shouldSeedSettings } from '../lib/defaults/seed'
@@ -46,9 +47,12 @@ export async function runTabYardEvaluationCycle(): Promise<void> {
 console.log('tabyard background loaded')
 
 registerActivityListeners()
+registerSchedulerListeners(runTabYardEvaluationCycle)
 
 chrome.runtime.onInstalled.addListener(() => {
-  void seedStorageIfEmpty().catch((err: unknown) => {
-    console.error('tab yard install seed failed', err)
-  })
+  void seedStorageIfEmpty()
+    .then(() => rescheduleEvaluationAlarm())
+    .catch((err: unknown) => {
+      console.error('tab yard install setup failed', err)
+    })
 })
