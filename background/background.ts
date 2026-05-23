@@ -1,4 +1,6 @@
+import { createEvaluationCyclePorts } from './evaluation-ports'
 import { syncTabActivated, syncTabRemoved } from '../lib/activity/sync'
+import { runEvaluationCycle } from '../lib/engine/evaluation-cycle'
 import { initialSettings, shouldSeedSettings } from '../lib/defaults/seed'
 import {
   readActivityCache,
@@ -32,6 +34,13 @@ function registerActivityListeners(): void {
       console.error('tab yard tab removed sync failed', err)
     })
   })
+}
+
+export async function runTabYardEvaluationCycle(): Promise<void> {
+  const result = await runEvaluationCycle(createEvaluationCyclePorts())
+  if (!result.skipped) {
+    console.log('tab yard cycle finished', result)
+  }
 }
 
 console.log('tabyard background loaded')
