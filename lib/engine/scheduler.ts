@@ -21,7 +21,7 @@ export async function syncEvaluationAlarm(
   await ports.createAlarm(EVALUATION_ALARM_NAME, periodInMinutes)
 }
 
-// keep existing alarm when interval unchanged — avoids resetting the timer on every sw wake
+// keep existing alarm when interval unchanged; avoids resetting the timer on every sw wake
 export async function syncEvaluationAlarmIfNeeded(
   ports: SchedulerPorts,
   periodInMinutes: EvaluationIntervalMinutes,

@@ -23,7 +23,7 @@ export function formatDurationShort(ms: number): string {
 // human past time: just now, 2m ago, 1d ago
 export function formatTimeAgo(atMs: number, nowMs = Date.now()): string {
   if (!Number.isFinite(atMs) || atMs <= 0) {
-    return '—'
+    return 'n/a'
   }
   const diff = nowMs - atMs
   if (diff < 15_000) {
@@ -35,7 +35,7 @@ export function formatTimeAgo(atMs: number, nowMs = Date.now()): string {
 // human future time: now, in 45s, in 5m
 export function formatTimeUntil(atMs: number | null | undefined, nowMs = Date.now()): string {
   if (atMs === undefined || atMs === null || !Number.isFinite(atMs) || atMs <= 0) {
-    return '—'
+    return 'n/a'
   }
   const diff = atMs - nowMs
   if (diff <= 0) {

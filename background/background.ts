@@ -1,3 +1,4 @@
+import { EXTENSION_LOG_PREFIX } from '../lib/product-name'
 import { runTabYardEvaluationCycle } from './evaluation-runner'
 import { restoreFromGraveyard } from './graveyard-restore'
 import { registerRuntimeMessageListener } from './messages'
@@ -26,16 +27,16 @@ function registerOpenDashboardOnActionClick(): void {
 function registerActivityListeners(): void {
   chrome.tabs.onActivated.addListener((activeInfo) => {
     void syncTabActivated(activityPorts, activeInfo.tabId).catch((err: unknown) => {
-      console.error('tabcleaner tab activated sync failed', err)
+      console.error(`${EXTENSION_LOG_PREFIX} tab activated sync failed`, err)
     })
   })
 
   chrome.tabs.onRemoved.addListener((tabId) => {
     void clearSleptTab(tabId).catch((err: unknown) => {
-      console.error('tabcleaner slept tab cleanup failed', err)
+      console.error(`${EXTENSION_LOG_PREFIX} slept tab cleanup failed`, err)
     })
     void syncTabRemoved(activityPorts, tabId).catch((err: unknown) => {
-      console.error('tabcleaner tab removed sync failed', err)
+      console.error(`${EXTENSION_LOG_PREFIX} tab removed sync failed`, err)
     })
   })
 }
@@ -52,10 +53,10 @@ registerRuntimeMessageListener({
 
 chrome.runtime.onInstalled.addListener(() => {
   void initializeExtension({ runCycle: true }).catch((err: unknown) => {
-    console.error('tabcleaner install setup failed', err)
+    console.error(`${EXTENSION_LOG_PREFIX} install setup failed`, err)
   })
 })
 
 void initializeExtension().catch((err: unknown) => {
-  console.error('tabcleaner background init failed', err)
+  console.error(`${EXTENSION_LOG_PREFIX} background init failed`, err)
 })

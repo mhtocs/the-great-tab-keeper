@@ -22,7 +22,7 @@ export async function restoreFromGraveyard(entryId: string) {
   const result = await restoreGraveyardEntry(restorePorts, entries, entryId)
   if (result.ok && entry) {
     await writeGraveyard(result.entries)
-    await appendDevLog(`restored · ${entry.title || 'untitled'} · ${entry.url}`)
+    await appendDevLog(`restored, ${entry.title || 'untitled'}, ${entry.url}`)
   }
   return result
 }

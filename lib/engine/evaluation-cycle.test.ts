@@ -31,6 +31,7 @@ function ports(overrides: Partial<EvaluationCyclePorts> = {}): EvaluationCyclePo
     ],
     getActiveTabId: async () => undefined,
     readActivityCache: async () => ({}),
+    readSleptTabs: async () => ({}),
     readGraveyard: async () => graveyard,
     writeGraveyard: async (entries) => {
       graveyard.length = 0
@@ -115,7 +116,7 @@ describe('runEvaluationCycle', () => {
     })
     expect(removeTab).not.toHaveBeenCalled()
     expect(await p.readGraveyard()).toHaveLength(0)
-    expect(onActionMessage).toHaveBeenCalledWith('slept · example')
+    expect(onActionMessage).toHaveBeenCalledWith('slept, example')
   })
 
   it('does not count sleep when sleep adapter returns false', async () => {
@@ -149,5 +150,84 @@ describe('runEvaluationCycle', () => {
     expect(result.tabsEvaluated).toBe(2)
     expect(result.actionsTaken).toBe(2)
     expect(onTabError).not.toHaveBeenCalled()
+  })
+
+  it('does not close slept tab without slept=true condition', async () => {
+    const removeTab = vi.fn().mockResolvedValue(undefined)
+    const result = await runEvaluationCycle(
+      ports({
+        removeTab,
+        queryTabs: async () => [
+          {
+            id: 7,
+            url: 'chrome-extension://id/ui/slept/index.html?tabId=7',
+            title: 'slept tab',
+            lastAccessed: Date.now() - THREE_HOURS_MS,
+          },
+        ],
+      }),
+    )
+    expect(result.tabsEvaluated).toBe(1)
+    expect(result.actionsTaken).toBe(0)
+    expect(removeTab).not.toHaveBeenCalled()
+  })
+
+  it('closes slept tab when rule requires slept=true', async () => {
+    const removeTab = vi.fn().mockResolvedValue(undefined)
+    const now = Date.now()
+    const p = ports({
+      readSettings: async () =>
+        baseSettings({ rules: ['close slept=true inactive>2h'] }),
+      removeTab,
+      readSleptTabs: async () => ({
+        '8': {
+          url: 'https://example.com/original',
+          title: 'original title',
+          sleptAt: now - THREE_HOURS_MS,
+        },
+      }),
+      queryTabs: async () => [
+        {
+          id: 8,
+          url: 'chrome-extension://id/ui/slept/index.html?tabId=8',
+          title: 'slept tab',
+        },
+      ],
+    })
+    const result = await runEvaluationCycle(p, now)
+    expect(result.tabsEvaluated).toBe(1)
+    expect(result.actionsTaken).toBe(1)
+    expect(result.tabsClosed).toBe(1)
+    expect(removeTab).toHaveBeenCalledWith(8)
+
+    const graveyard = await p.readGraveyard()
+    expect(graveyard[0]?.url).toBe('https://example.com/original')
+  })
+
+  it('closes old slept tab without chrome lastAccessed using sleptAt', async () => {
+    const removeTab = vi.fn().mockResolvedValue(undefined)
+    const now = Date.now()
+    const p = ports({
+      readSettings: async () =>
+        baseSettings({ rules: ['close slept=true inactive>2m'] }),
+      removeTab,
+      readSleptTabs: async () => ({
+        '8': {
+          url: 'https://example.com/old',
+          title: 'old',
+          sleptAt: now - THREE_HOURS_MS,
+        },
+      }),
+      queryTabs: async () => [
+        {
+          id: 8,
+          url: 'chrome-extension://idekaaaflogbdjllgdfhpiamkhfofenh/ui/slept/index.html?tabId=8',
+          title: 'slept',
+        },
+      ],
+    })
+    const result = await runEvaluationCycle(p, now)
+    expect(result.tabsClosed).toBe(1)
+    expect(removeTab).toHaveBeenCalledWith(8)
   })
 })

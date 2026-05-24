@@ -19,7 +19,7 @@ export function useGraveyard() {
 
   const hintLine = computed(() => {
     const kept = effectiveGraveyardRetentionDays(retentionDays.value)
-    return `kept ${kept} days · click a tab to reopen`
+    return `kept ${kept} days, click a tab to reopen`
   })
 
   async function load() {

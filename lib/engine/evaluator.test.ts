@@ -14,6 +14,7 @@ function tab(overrides: Record<string, unknown> = {}) {
     pinned: false,
     audible: false,
     active: false,
+    slept: false,
     inactiveMs: THREE_HOURS_MS,
     lastAccessedMs: Date.now() - THREE_HOURS_MS,
     discarded: false,
@@ -95,6 +96,25 @@ describe('evaluateTab', () => {
     const outcome = evaluateTab(rulesFrom(['sleep inactive>2h']), tab())
     expect(outcome.resolvedAction).toBe('sleep')
     expect(outcome.executed).toBe(true)
+  })
+
+  it('executes close for slept tab when rule declares slept=true', () => {
+    const outcome = evaluateTab(
+      rulesFrom(['close slept=true inactive>2h']),
+      tab({ slept: true }),
+    )
+    expect(outcome.resolvedAction).toBe('close')
+    expect(outcome.executed).toBe(true)
+  })
+
+  it('does not execute sleep when tab is already slept', () => {
+    const outcome = evaluateTab(
+      rulesFrom(['sleep slept=true inactive>2h']),
+      tab({ slept: true }),
+    )
+    expect(outcome.resolvedAction).toBe('sleep')
+    expect(outcome.executed).toBe(false)
+    expect(outcome.blockReason).toBe('slept')
   })
 
   it('closes docs when keep google and close docs both match', () => {

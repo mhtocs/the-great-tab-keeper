@@ -1,4 +1,4 @@
-// headed chromium only — run via npm run screenshots:readme (not part of test:e2e)
+// headed chromium only, run via npm run screenshots:readme (not part of test:e2e)
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -19,7 +19,7 @@ const outDir = path.resolve(
   '../docs/screenshots',
 )
 
-// keep / close / discard / sleep + url / inactive — copied from lib + e2e tests
+// keep / close / discard / sleep + url / inactive, copied from lib + e2e tests
 const readmeRules = [
   'keep pinned=true', // seed.test, action-handlers.test
   'keep url=docs.google.com', // evaluator.test
@@ -77,11 +77,11 @@ test('capture readme screenshots', async ({ context, dashboardUrl, extensionId }
     {
       id: 'log-1',
       at: now - 3 * 60 * 1000,
-      message: 'cycle finished · 24 evaluated · 3 closed, 1 slept',
+      message: 'cycle finished, 24 evaluated, 3 closed, 1 slept',
     },
-    { id: 'log-2', at: now - 28 * 60 * 1000, message: 'closed · Array.prototype.map() - JavaScript | MDN' },
-    { id: 'log-3', at: now - 2 * hour, message: 'slept · The Episode Archive' },
-    { id: 'log-4', at: now - 2 * hour, message: 'closed · Pull requests' },
+    { id: 'log-2', at: now - 28 * 60 * 1000, message: 'closed, Array.prototype.map() - JavaScript | MDN' },
+    { id: 'log-3', at: now - 2 * hour, message: 'slept, The Episode Archive' },
+    { id: 'log-4', at: now - 2 * hour, message: 'closed, Pull requests' },
     { id: 'log-5', at: now - 4 * hour, message: 'alarm fired' },
   ]
 
@@ -134,7 +134,7 @@ test('capture readme screenshots', async ({ context, dashboardUrl, extensionId }
   const sleptPage = await context.newPage()
   await sleptPage.setViewportSize({ width: 1100, height: 820 })
   await sleptPage.goto(sleptUrl)
-  await sleptPage.getByText('slept by tabcleaner').waitFor()
+  await sleptPage.getByText('slept by the great tab keeper').waitFor()
   await expect(sleptPage.getByText('The Episode Archive')).toBeVisible()
   await expect(sleptPage.getByText('https://journalclub.io/episodes')).toBeVisible()
   await sleptPage.screenshot({ path: path.join(outDir, 'sleep.png') })

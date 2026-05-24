@@ -3,6 +3,7 @@ export type SleptTabEntry = {
   title: string
   favicon?: string
   sleptAt: number
+  memoryFreedBytes?: number
 }
 
 export type SleptTabMap = Record<string, SleptTabEntry>

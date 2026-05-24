@@ -8,7 +8,7 @@ export type RestoreGraveyardResult =
   | { ok: true; tabId: number; entries: GraveyardEntry[] }
   | { ok: false; error: string; entries: GraveyardEntry[] }
 
-// ac 3 — open tab at saved url and remove entry from graveyard
+// ac 3: open tab at saved url and remove entry from graveyard
 export async function restoreGraveyardEntry(
   ports: RestorePorts,
   entries: GraveyardEntry[],

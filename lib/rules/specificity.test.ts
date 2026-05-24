@@ -3,7 +3,7 @@ import { parseRule } from './parser'
 import { specificityScore } from './specificity'
 
 describe('specificityScore', () => {
-  // ac 8 — idea.md example: 1 vs 1+3+2=6
+  // ac 8: idea.md example, 1 vs 1+3+2=6
   it('scores inactive-only rule as 1', () => {
     const parsed = parseRule('close inactive>2h')
     expect(parsed.ok).toBe(true)

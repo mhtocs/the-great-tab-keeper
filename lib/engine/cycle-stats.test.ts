@@ -56,8 +56,8 @@ describe('cycle stats', () => {
     expect(lines).toEqual([
       'engine on',
       'graveyard: 4',
-      'next run: in 5m · every 5 min',
-      'last run: 2m ago · 12 evaluated · 2 closed',
+      'next run: in 5m, every 5 min',
+      'last run: 2m ago, 12 evaluated, 2 closed',
     ])
   })
 })

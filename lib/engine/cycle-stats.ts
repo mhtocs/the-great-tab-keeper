@@ -49,7 +49,7 @@ export function formatDashboardStatLines(input: CycleStatsInput): string[] {
   } else {
     const nextAt = resolveNextRunAtMs(input)
     lines.push(
-      `next run: ${formatTimeUntil(nextAt, now)} · every ${input.settings.evaluationIntervalMinutes} min`,
+      `next run: ${formatTimeUntil(nextAt, now)}, every ${input.settings.evaluationIntervalMinutes} min`,
     )
   }
 
@@ -57,8 +57,8 @@ export function formatDashboardStatLines(input: CycleStatsInput): string[] {
     lines.push('last run: no run yet')
   } else {
     lines.push(
-      `last run: ${formatTimeAgo(input.lastRun.at, now)} · ` +
-        `${input.lastRun.tabsEvaluated} evaluated · ` +
+      `last run: ${formatTimeAgo(input.lastRun.at, now)}, ` +
+        `${input.lastRun.tabsEvaluated} evaluated, ` +
         `${input.lastRun.actionsTaken} closed`,
     )
   }

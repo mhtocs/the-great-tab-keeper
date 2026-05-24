@@ -53,7 +53,7 @@ export function resolveWinner(rules: ParsedRule[]): ParsedRule | null {
   return preferKeepWhenSameUrlPattern(winner, rules)
 }
 
-// same url= on keep and close → keep wins; narrower url on close still beats broader keep
+// same url= on keep and close: keep wins; narrower url on close still beats broader keep
 function preferKeepWhenSameUrlPattern(
   winner: ParsedRule,
   candidates: ParsedRule[],
@@ -101,7 +101,7 @@ function pickBySpecificity(
   return tieBreak(a, b)
 }
 
-// destructive rules only — specificity first, then keep > close > sleep > discard
+// destructive rules only: specificity first, then keep > close > sleep > discard
 export function pickWinner(a: ParsedRule, b: ParsedRule): ParsedRule {
   return pickBySpecificity(a, b, pickByActionPrecedence)
 }

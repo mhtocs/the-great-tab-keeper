@@ -8,6 +8,7 @@ function tab(overrides: Partial<TabMatchContext> = {}): TabMatchContext {
     pinned: false,
     audible: false,
     active: false,
+    slept: false,
     inactiveMs: 3 * 3_600_000,
     ...overrides,
   }
@@ -30,7 +31,7 @@ describe('ruleMatches inactive', () => {
 })
 
 describe('ruleMatches url', () => {
-  // ac 16 — glob on full url, case-insensitive
+  // ac 16: glob on full url, case-insensitive
   it('matches youtube url pattern', () => {
     const rule = parseRule('close url=*youtube.com* inactive>1h')
     expect(
@@ -98,6 +99,12 @@ describe('ruleMatches tab state', () => {
     const rule = parseRule('keep pinned=true')
     expect(rule.ok && ruleMatches(rule.rule, tab({ pinned: true }))).toBe(true)
     expect(rule.ok && ruleMatches(rule.rule, tab({ pinned: false }))).toBe(false)
+  })
+
+  it('matches slept=true only for slept placeholder tabs', () => {
+    const rule = parseRule('close slept=true inactive>2h')
+    expect(rule.ok && ruleMatches(rule.rule, tab({ slept: true }))).toBe(true)
+    expect(rule.ok && ruleMatches(rule.rule, tab({ slept: false }))).toBe(false)
   })
 })
 

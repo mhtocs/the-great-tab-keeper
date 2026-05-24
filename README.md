@@ -1,4 +1,4 @@
-# tabcleaner
+# The Great Tab Keeper
 
 chrome extension: plain-text tab rules, scheduled cleanup, graveyard restore, dev logs.
 
@@ -10,10 +10,10 @@ not published to the chrome web store yet. install from a [github release](https
 
 ### install from a release
 
-1. open [releases](https://github.com/mhtocs/tabcleaner/releases) and download `tabcleaner-v<version>.zip` for the version you want.
+1. open [releases](https://github.com/mhtocs/tabcleaner/releases) and download `the-great-tab-keeper-v<version>.zip` for the version you want.
 2. unzip it anywhere (e.g. downloads). you get one folder; that's the extension.
 3. in chrome, open **extensions**, turn on **developer mode**, click **load unpacked**, and select that unzipped folder (the folder itself, not the zip file).
-4. pin or open **tabcleaner** from the toolbar to open the dashboard. set rules, save, and leave the engine on for scheduled cleanup (or use **run now**).
+4. pin or open **The Great Tab Keeper** from the toolbar to open the dashboard. set rules, save, and leave the engine on for scheduled cleanup (or use **run now**).
 
 to update later, download a newer zip, remove the old unpacked extension in chrome, and load the new folder (or replace the folder contents and hit **reload** on the extension card).
 
@@ -98,7 +98,7 @@ git tag v0.0.1
 git push origin v0.0.1
 ```
 
-github actions builds, tests, and attaches `tabcleaner-v0.0.1.zip`.
+github actions builds, tests, and attaches `the-great-tab-keeper-v0.0.1.zip`.
 
 ## commands
 
@@ -110,7 +110,7 @@ github actions builds, tests, and attaches `tabcleaner-v0.0.1.zip`.
 | `npm run test:e2e` | playwright + loaded extension (headed) |
 | `npm run verify` | build + unit + ui + lint + e2e |
 | `npm run screenshots:readme` | refresh `docs/screenshots/` for this file |
-| `./scripts/package-extension.sh` | zip `dist/` to `tabcleaner-v<version>.zip` |
+| `./scripts/package-extension.sh` | zip `dist/` to `the-great-tab-keeper-v<version>.zip` |
 
 ## license
 

@@ -1,3 +1,4 @@
+import { formatFreedMemory } from '@/lib/slept/format-memory'
 import { getSleptEntry } from '@/lib/slept/store'
 import { readSleptTabs } from '@/lib/storage/chrome-session'
 import '../styles/index.css'
@@ -7,6 +8,7 @@ const tabId = Number(params.get('tabId'))
 const reloadButton = document.getElementById('reload') as HTMLButtonElement | null
 const titleEl = document.getElementById('title') as HTMLParagraphElement | null
 const urlEl = document.getElementById('url') as HTMLParagraphElement | null
+const memoryEl = document.getElementById('memory') as HTMLParagraphElement | null
 const errorEl = document.getElementById('error') as HTMLParagraphElement | null
 
 function showError(message: string) {
@@ -64,6 +66,14 @@ async function loadSleptInfo() {
   titleEl.title = title
   urlEl.textContent = entry.url
   urlEl.title = entry.url
+
+  if (memoryEl && entry.memoryFreedBytes !== undefined) {
+    const label = formatFreedMemory(entry.memoryFreedBytes)
+    if (label) {
+      memoryEl.textContent = `about ${label} freed`
+      memoryEl.hidden = false
+    }
+  }
 }
 
 void loadSleptInfo().then(bindReload)

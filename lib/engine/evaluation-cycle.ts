@@ -1,4 +1,6 @@
 import { pruneGraveyardByRetention } from '../graveyard/store'
+import { getSleptEntry } from '../slept/store'
+import type { SleptTabMap } from '../slept/types'
 import { parseRules } from '../rules/parser'
 import type {
   ActivityCache,
@@ -10,7 +12,6 @@ import type {
 import { createActionHandlers, type SleepTabInput } from './action-handlers'
 import type { ActionResult } from './actions'
 import { evaluateTab } from './evaluator'
-import { isSleptPageUrl } from '../slept/slept-page'
 import { toTabEvaluationInput, type ChromeTabSnapshot } from './tab-snapshot'
 
 export type EvaluationCyclePorts = {
@@ -18,6 +19,7 @@ export type EvaluationCyclePorts = {
   queryTabs: () => Promise<ChromeTabSnapshot[]>
   getActiveTabId: () => Promise<number | undefined>
   readActivityCache: () => Promise<ActivityCache>
+  readSleptTabs: () => Promise<SleptTabMap>
   readGraveyard: () => Promise<GraveyardEntry[]>
   writeGraveyard: (entries: GraveyardEntry[]) => Promise<void>
   writeLastRun: (summary: LastRunSummary) => Promise<void>
@@ -72,6 +74,7 @@ export async function runEvaluationCycle(
 
   const rules = parsedRules.rules
   const cache = await ports.readActivityCache()
+  const sleptTabs = await ports.readSleptTabs()
   const tabs = await ports.queryTabs()
   const activeTabId = await ports.getActiveTabId()
 
@@ -94,11 +97,14 @@ export async function runEvaluationCycle(
     }
 
     try {
-      if (chromeTab.url && isSleptPageUrl(chromeTab.url)) {
-        continue
-      }
-
-      const input = toTabEvaluationInput(chromeTab, activeTabId, cache, nowMs)
+      const sleptEntry = getSleptEntry(sleptTabs, tabId)
+      const input = toTabEvaluationInput(
+        chromeTab,
+        activeTabId,
+        cache,
+        nowMs,
+        sleptEntry?.sleptAt,
+      )
       if (!input) {
         continue
       }
@@ -107,13 +113,22 @@ export async function runEvaluationCycle(
       const outcome = evaluateTab(rules, input)
 
       if (outcome.executed && outcome.resolvedAction && outcome.winner) {
+        const tabForAction =
+          input.slept && sleptEntry
+            ? {
+                tabId: input.tabId,
+                url: sleptEntry.url,
+                title: sleptEntry.title,
+                favicon: sleptEntry.favicon ?? chromeTab.favIconUrl,
+              }
+            : {
+                tabId: input.tabId,
+                url: input.url,
+                title: input.title,
+                favicon: chromeTab.favIconUrl,
+              }
         const result = await handlers[outcome.resolvedAction]({
-          tab: {
-            tabId: input.tabId,
-            url: input.url,
-            title: input.title,
-            favicon: chromeTab.favIconUrl,
-          },
+          tab: tabForAction,
           ruleText: outcome.winner.source,
         })
         recordAction(
@@ -184,6 +199,6 @@ function recordAction(
   }
   if (action === 'sleep' && result.tabDiscarded) {
     onSuccess({ slept: true })
-    void ports.onActionMessage?.(`slept · ${title || 'untitled'}`)
+    void ports.onActionMessage?.(`slept, ${title || 'untitled'}`)
   }
 }

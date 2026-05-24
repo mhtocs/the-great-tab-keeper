@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
-// headed capture only — not part of npm run test:e2e
+// headed capture only, not part of npm run test:e2e
 export default defineConfig({
   testDir: 'e2e',
   testMatch: 'readme-screenshots.spec.ts',

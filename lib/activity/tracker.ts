@@ -28,7 +28,7 @@ export function clearTabAccess(cache: ActivityCache, tabId: number): ActivityCac
 }
 
 // best known last-access time: max(chrome lastAccessed, shadow cache).
-// unknown access → nowMs so inactiveMs is 0 until we observe the tab.
+// unknown access defaults to nowMs so inactiveMs is 0 until we observe the tab.
 export function lastAccessedMs(
   tab: TabLastAccessSource,
   cache: ActivityCache,
@@ -48,7 +48,13 @@ export function inactiveMsForTab(
   tab: TabLastAccessSource,
   cache: ActivityCache,
   nowMs: number,
+  sleptAtMs?: number,
 ): number {
   const last = lastAccessedMs(tab, cache, nowMs)
-  return Math.max(0, nowMs - last)
+  let inactive = Math.max(0, nowMs - last)
+  // extension slept pages often lack chrome lastAccessed; use when tab was put to sleep
+  if (sleptAtMs !== undefined && sleptAtMs > 0) {
+    inactive = Math.max(inactive, nowMs - sleptAtMs)
+  }
+  return inactive
 }

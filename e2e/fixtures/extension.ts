@@ -60,7 +60,7 @@ export async function openDashboard(
 ): Promise<Page> {
   const page = await context.newPage()
   await page.goto(dashboardUrl)
-  await page.getByRole('heading', { name: 'tabcleaner' }).waitFor()
+  await page.getByRole('heading', { name: 'The Great Tab Keeper' }).waitFor()
   return page
 }
 
@@ -89,7 +89,7 @@ export async function storageClear(context: BrowserContext): Promise<void> {
   })
 }
 
-// trigger cycle from an extension page — sendMessage from the service worker alone fails
+// trigger cycle from an extension page; sendMessage from the service worker alone fails
 export async function runEvaluationCycle(
   context: BrowserContext,
   dashboardUrl: string,

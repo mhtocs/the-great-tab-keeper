@@ -9,6 +9,7 @@ function tab(overrides: Partial<TabMatchContext> = {}): TabMatchContext {
     pinned: false,
     audible: false,
     active: false,
+    slept: false,
     inactiveMs: 5 * 3_600_000,
     ...overrides,
   }
@@ -104,6 +105,29 @@ describe('checkDestructiveSafety', () => {
     expect(checkDestructiveSafety(tab({ pinned: true }), rule.rule)).toEqual({
       allowed: false,
       reason: 'pinned',
+    })
+  })
+
+  it('blocks close on slept tab when rule omits slept=true', () => {
+    const rule = parseRule('close inactive>2h')
+    expect(rule.ok).toBe(true)
+    if (!rule.ok) {
+      return
+    }
+    expect(checkDestructiveSafety(tab({ slept: true }), rule.rule)).toEqual({
+      allowed: false,
+      reason: 'slept',
+    })
+  })
+
+  it('allows close on slept tab when rule includes slept=true', () => {
+    const rule = parseRule('close inactive>2h slept=true')
+    expect(rule.ok).toBe(true)
+    if (!rule.ok) {
+      return
+    }
+    expect(checkDestructiveSafety(tab({ slept: true }), rule.rule)).toEqual({
+      allowed: true,
     })
   })
 

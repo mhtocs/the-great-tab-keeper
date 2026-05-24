@@ -5,8 +5,10 @@ import GraveyardTable from '../shared/components/graveyard-table.vue'
 import DevLogPanel from '../shared/components/dev-log-panel.vue'
 import RulesEditor from '../shared/components/rules-editor.vue'
 import SettingsPanel from '../shared/components/settings-panel.vue'
+import { EXTENSION_DISPLAY_NAME } from '@/lib/product-name'
 import { ref } from 'vue'
 
+const extensionName = EXTENSION_DISPLAY_NAME
 const activeTab = ref<DashboardTab>('rules')
 const { statLines, loading: statsLoading } = useCycleStats()
 </script>
@@ -16,9 +18,9 @@ const { statLines, loading: statsLoading } = useCycleStats()
     <div class="mx-auto max-w-5xl p-4">
       <header class="mb-6 flex items-start justify-between gap-6">
         <div>
-          <h1 class="text-xl font-semibold text-gray-800">tabcleaner</h1>
+          <h1 class="text-xl font-semibold text-gray-800">{{ extensionName }}</h1>
           <p class="mt-1 max-w-md text-sm text-gray-500">
-            plain-text rules to close, discard, or keep tabs on a schedule — with a
+            plain-text rules to close, discard, or keep tabs on a schedule, with a
             graveyard to restore what you closed.
           </p>
         </div>

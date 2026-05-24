@@ -10,7 +10,7 @@ import {
 const ACTIONS: readonly LifecycleAction[] = ['keep', 'close', 'discard', 'sleep']
 
 const INACTIVE_RE = /^inactive>(\d+)(m|h|d)$/i
-const BOOLEAN_CONDITION_RE = /^(pinned|audible|active)=(true|false)$/i
+const BOOLEAN_CONDITION_RE = /^(pinned|audible|active|slept)=(true|false)$/i
 const URL_RE = /^url=(.+)$/i
 
 export function parseRule(line: string): ParseRuleResult {
@@ -25,7 +25,7 @@ export function parseRule(line: string): ParseRuleResult {
   if (!actionToken || !isLifecycleAction(actionToken)) {
     return {
       ok: false,
-      error: `unknown action "${tokens[0] ?? ''}" — use keep, close, or discard`,
+      error: `unknown action "${tokens[0] ?? ''}", use keep, close, or discard`,
       source,
     }
   }
@@ -138,7 +138,11 @@ function parseConditionToken(
 
   const booleanMatch = BOOLEAN_CONDITION_RE.exec(token)
   if (booleanMatch) {
-    const kind = booleanMatch[1]!.toLowerCase() as 'pinned' | 'audible' | 'active'
+    const kind = booleanMatch[1]!.toLowerCase() as
+      | 'pinned'
+      | 'audible'
+      | 'active'
+      | 'slept'
     const value = booleanMatch[2] === 'true'
     return { ok: true, condition: { kind, value } }
   }

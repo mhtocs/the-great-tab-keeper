@@ -2,7 +2,7 @@ import type { ParsedRule, RuleCondition } from '../rules/types'
 import type { TabMatchContext } from '../rules/matcher'
 import type { LifecycleAction } from '../storage/schema'
 
-export type SafetyBlockReason = 'pinned' | 'audible' | 'active'
+export type SafetyBlockReason = 'pinned' | 'audible' | 'active' | 'slept'
 
 export type DestructiveSafetyResult =
   | { allowed: true }
@@ -16,7 +16,7 @@ export function isDestructiveAction(action: LifecycleAction): boolean {
 
 function ruleDeclares(
   rule: ParsedRule,
-  kind: Extract<RuleCondition['kind'], 'pinned' | 'audible' | 'active'>,
+  kind: Extract<RuleCondition['kind'], 'pinned' | 'audible' | 'active' | 'slept'>,
   value: boolean,
 ): boolean {
   return rule.conditions.some(
@@ -44,6 +44,10 @@ export function checkDestructiveSafety(
 
   if (tab.active && !ruleDeclares(winner, 'active', true)) {
     return { allowed: false, reason: 'active' }
+  }
+
+  if (tab.slept && !ruleDeclares(winner, 'slept', true)) {
+    return { allowed: false, reason: 'slept' }
   }
 
   return { allowed: true }

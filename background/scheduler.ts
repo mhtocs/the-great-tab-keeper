@@ -1,3 +1,4 @@
+import { EXTENSION_LOG_PREFIX } from '../lib/product-name'
 import { EVALUATION_ALARM_NAME, syncEvaluationAlarm } from '../lib/engine/scheduler'
 import type { Settings } from '../lib/storage/schema'
 import { appendDevLog, readSettings } from '../lib/storage/chrome-storage'
@@ -18,13 +19,13 @@ export function registerSchedulerListeners(
     }
     void appendDevLog('alarm fired')
     void onEvaluate().catch((err: unknown) => {
-      console.error('tabcleaner evaluation cycle failed', err)
+      console.error(`${EXTENSION_LOG_PREFIX} evaluation cycle failed`, err)
     })
   })
 
   chrome.runtime.onStartup.addListener(() => {
     void initializeExtension({ runCycle: true }).catch((err: unknown) => {
-      console.error('tabcleaner startup init failed', err)
+      console.error(`${EXTENSION_LOG_PREFIX} startup init failed`, err)
     })
   })
 
@@ -40,7 +41,7 @@ export function registerSchedulerListeners(
       return
     }
     void rescheduleEvaluationAlarm().catch((err: unknown) => {
-      console.error('tabcleaner settings alarm reschedule failed', err)
+      console.error(`${EXTENSION_LOG_PREFIX} settings alarm reschedule failed`, err)
     })
   })
 }

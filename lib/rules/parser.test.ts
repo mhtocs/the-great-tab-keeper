@@ -45,8 +45,10 @@ describe('parseRule', () => {
     }
   })
 
-  it('parses pinned audible and active booleans', () => {
-    const result = parseRule('close inactive>30d pinned=false audible=true active=false')
+  it('parses pinned audible active and slept booleans', () => {
+    const result = parseRule(
+      'close inactive>30d pinned=false audible=true active=false slept=true',
+    )
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.rule.conditions).toContainEqual({
@@ -60,6 +62,10 @@ describe('parseRule', () => {
       expect(result.rule.conditions).toContainEqual({
         kind: 'active',
         value: false,
+      })
+      expect(result.rule.conditions).toContainEqual({
+        kind: 'slept',
+        value: true,
       })
     }
   })

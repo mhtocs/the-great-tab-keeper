@@ -35,6 +35,6 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
-          name: tabcleaner-dist
+          name: great-tab-keeper-dist
           path: dist/
           retention-days: 7

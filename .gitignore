@@ -9,7 +9,7 @@ node_modules
 # build
 dist
 dist-ssr
-tabcleaner-v*.zip
+the-great-tab-keeper-v*.zip
 *.tsbuildinfo
 
 # env (secrets)

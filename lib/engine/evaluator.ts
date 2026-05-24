@@ -9,7 +9,7 @@ export type TabEvaluationInput = TabMatchContext & {
   url: string
   title: string
   discarded: boolean
-  // epoch ms — best known last time tab was active
+  // epoch ms, best known last time tab was active
   lastAccessedMs: number
 }
 
@@ -72,6 +72,17 @@ export function evaluateTab(
       resolutionReason: reason,
       executed: false,
       blockReason: 'discarded',
+    }
+  }
+
+  if (resolvedAction === 'sleep' && tab.slept) {
+    return {
+      matchedRules,
+      winner,
+      resolvedAction,
+      resolutionReason: reason,
+      executed: false,
+      blockReason: 'slept',
     }
   }
 

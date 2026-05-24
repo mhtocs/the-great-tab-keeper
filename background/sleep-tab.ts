@@ -3,6 +3,7 @@ import { getSleptEntry, removeSleptEntry, setSleptEntry } from '../lib/slept/sto
 import type { SleptTabEntry } from '../lib/slept/types'
 import { readSleptTabs, writeSleptTabs } from '../lib/storage/chrome-session'
 import { updateTabUrl } from './chrome-tabs'
+import { measureTabMemoryBytesFromChrome } from './measure-tab-memory'
 
 export type SleepTabInput = {
   tabId: number
@@ -16,11 +17,14 @@ export async function sleepTabById(input: SleepTabInput): Promise<boolean> {
     return false
   }
 
+  const memoryFreedBytes = await measureTabMemoryBytesFromChrome(input.tabId)
+
   const entry: SleptTabEntry = {
     url: input.url,
     title: input.title,
     favicon: input.favicon,
     sleptAt: Date.now(),
+    ...(memoryFreedBytes !== undefined ? { memoryFreedBytes } : {}),
   }
   const map = await readSleptTabs()
   await writeSleptTabs(setSleptEntry(map, input.tabId, entry))

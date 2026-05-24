@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "tabcleaner",
+  "name": "The Great Tab Keeper",
+  "short_name": "Tab Keeper",
   "version": "0.0.1",
   "description": "close idle tabs from plain-text rules, restore from graveyard",
-  "permissions": ["tabs", "storage", "alarms"],
+  "permissions": ["tabs", "storage", "alarms", "processes"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "action": {
-    "default_title": "tabcleaner"
+    "default_title": "The Great Tab Keeper"
   }
 }

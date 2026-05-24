@@ -5,6 +5,7 @@ const CONDITION_WEIGHT: Record<RuleCondition['kind'], number> = {
   pinned: 2,
   audible: 2,
   active: 2,
+  slept: 2,
   url: 4,
 }
 

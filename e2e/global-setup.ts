@@ -8,6 +8,6 @@ export default function globalSetup() {
     '../dist/manifest.json',
   )
   if (!existsSync(distManifest)) {
-    throw new Error('dist/ not found — run npm run build before npm run test:e2e')
+    throw new Error('dist/ not found, run npm run build before npm run test:e2e')
   }
 }

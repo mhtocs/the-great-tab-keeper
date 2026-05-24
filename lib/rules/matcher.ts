@@ -7,6 +7,7 @@ export type TabMatchContext = {
   pinned: boolean
   audible: boolean
   active: boolean
+  slept: boolean
   // milliseconds since the tab was last active
   inactiveMs: number
 }
@@ -43,6 +44,8 @@ function conditionMatches(
       return tab.audible === condition.value
     case 'active':
       return tab.active === condition.value
+    case 'slept':
+      return tab.slept === condition.value
     case 'url':
       return globMatch(condition.pattern, tab.url, { ignoreCase: true })
     default: {

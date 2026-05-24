@@ -260,6 +260,6 @@ test('restore writes a line to dev log', async ({ context, dashboardUrl }) => {
   await page.getByRole('button', { name: 'log restore target' }).click()
 
   await clickDashboardTab(page, 'logs')
-  await expect(page.locator('pre')).toContainText('restored · log restore target')
+  await expect(page.locator('pre')).toContainText('restored, log restore target')
   await page.close()
 })

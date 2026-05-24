@@ -11,7 +11,7 @@ export function effectiveGraveyardRetentionDays(retentionDays: number): number {
   return retentionDays
 }
 
-// ac 13 — drop entries older than retention window (minimum 10 days)
+// ac 13: drop entries older than retention window (minimum 10 days)
 export function pruneGraveyardByRetention(
   entries: GraveyardEntry[],
   retentionDays: number,

@@ -1,3 +1,4 @@
+import { EXTENSION_LOG_PREFIX } from '../lib/product-name'
 import { formatCycleResultMessage } from '../lib/logs/dev-log'
 import type { EvaluationCycleResult } from '../lib/engine/evaluation-cycle'
 import { runEvaluationCycle } from '../lib/engine/evaluation-cycle'
@@ -10,6 +11,7 @@ import {
   writeLastRun,
 } from '../lib/storage/chrome-storage'
 import { queryActiveTabId, queryAllTabs, removeTabById } from './chrome-tabs'
+import { readSleptTabs } from '../lib/storage/chrome-session'
 import { sleepTabById } from './sleep-tab'
 import { whenExtensionReady } from './setup'
 
@@ -23,6 +25,7 @@ export function runTabYardEvaluationCycle(): Promise<EvaluationCycleResult> {
       queryTabs: queryAllTabs,
       getActiveTabId: queryActiveTabId,
       readActivityCache,
+      readSleptTabs,
       readGraveyard,
       writeGraveyard,
       writeLastRun,
@@ -32,7 +35,7 @@ export function runTabYardEvaluationCycle(): Promise<EvaluationCycleResult> {
         await appendDevLog(message)
       },
       onTabError(tabId, error) {
-        console.error('tabcleaner cycle tab error', tabId, error)
+        console.error(`${EXTENSION_LOG_PREFIX} cycle tab error`, tabId, error)
       },
     })
     await appendDevLog(formatCycleResultMessage(result))

@@ -14,6 +14,7 @@ function tab(overrides: Partial<TabMatchContext> = {}): TabMatchContext {
     pinned: false,
     audible: false,
     active: false,
+    slept: false,
     inactiveMs: ELEVEN_MINUTES_MS,
     ...overrides,
   }
@@ -160,7 +161,7 @@ describe('winner after matchRules', () => {
     expect(result.action).toBe('keep')
   })
 
-  // ac 4 — default rules: pinned inactive tab resolves to keep, not close
+  // ac 4: default rules, pinned inactive tab resolves to keep, not close
   it('pinned tab with default rules resolves to keep', () => {
     const ctx = tab({ pinned: true, inactiveMs: 5 * 3_600_000 })
     const result = winnerAfterMatch([...DEFAULT_RULES], ctx)

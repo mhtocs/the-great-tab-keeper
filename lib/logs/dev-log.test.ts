@@ -26,7 +26,7 @@ describe('dev log', () => {
         tabsSlept: 2,
         tabsRemoved: 0,
       }),
-    ).toBe('cycle finished · 13 evaluated · 8 closed, 2 slept')
+    ).toBe('cycle finished, 13 evaluated, 8 closed, 2 slept')
 
     expect(
       formatCycleResultMessage({
@@ -37,7 +37,7 @@ describe('dev log', () => {
         tabsSlept: 0,
         tabsRemoved: 0,
       }),
-    ).toBe('cycle finished · 3 evaluated · no actions')
+    ).toBe('cycle finished, 3 evaluated, no actions')
 
     expect(
       formatCycleResultMessage({
@@ -49,7 +49,7 @@ describe('dev log', () => {
         tabsSlept: 0,
         tabsRemoved: 0,
       }),
-    ).toBe('cycle skipped · engine off')
+    ).toBe('cycle skipped, engine off')
   })
 
   it('renders oldest first in text output', () => {
