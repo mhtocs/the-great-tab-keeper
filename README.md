@@ -26,7 +26,8 @@ see [setup](#setup). after `npm run build`, use the same **load unpacked** step 
 
 ### rules
 
-editor with sample rules from tests: `keep`, `archive`, `discard`, `suspend`, plus `url=` and `inactive>`. one rule per line; engine toggle; save / run now.
+editor with sample rules from tests: `keep`, `archive`, `discard`, `suspend`, plus `url=` and `inactive>`. 
+one rule per line.
 
 ![rules tab](docs/screenshots/rules.png)
 
@@ -44,13 +45,13 @@ archived tabs land here. click a title to restore. grouped by day with the rule 
 
 ### logs
 
-plain-text dev log in storage: cycles, archives, suspends, restores. not a per-tab audit trail.
+dev log: cycles, archives, suspends, restores.
 
 ![logs tab](docs/screenshots/logs.png)
 
 ### settings
 
-evaluation interval and archive retention. saves immediately; interval change reschedules the alarm.
+evaluation interval and archive retention.
 
 ![settings tab](docs/screenshots/settings.png)
 
