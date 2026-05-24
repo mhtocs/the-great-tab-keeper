@@ -3,7 +3,7 @@
 
 Reduce tab clutter in chrome using plain-text tab rules, scheduled cleanup, archive restore.
 
-open the dashboard from the toolbar icon. rules run on an alarm; you can also hit **run now**.
+open the dashboard from the toolbar icon. rules run automatically in background every 5 minutes; you can also hit **run now**.
 
 ## how to use this extension
 
