@@ -3,8 +3,8 @@
   "name": "The Great Tab Keeper",
   "short_name": "Tab Keeper",
   "version": "0.0.1",
-  "description": "close idle tabs from plain-text rules, restore from graveyard",
-  "permissions": ["tabs", "storage", "alarms", "processes"],
+  "description": "archive idle tabs from plain-text rules, restore from archive",
+  "permissions": ["tabs", "storage", "alarms"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

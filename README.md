@@ -1,6 +1,6 @@
 # The Great Tab Keeper
 
-chrome extension: plain-text tab rules, scheduled cleanup, graveyard restore, dev logs.
+chrome extension: plain-text tab rules, scheduled cleanup, archive restore, dev logs.
 
 open the dashboard from the toolbar icon. rules run on an alarm; you can also hit **run now**.
 
@@ -27,31 +27,31 @@ captured from the built extension in headed chromium (`npm run screenshots:readm
 
 ### rules
 
-editor with sample rules from tests: `keep`, `close`, `discard`, `sleep`, plus `url=` and `inactive>`. one rule per line; engine toggle; save / run now.
+editor with sample rules from tests: `keep`, `archive`, `discard`, `suspend`, plus `url=` and `inactive>`. one rule per line; engine toggle; save / run now.
 
 ![rules tab](docs/screenshots/rules.png)
 
-### sleep
+### suspend
 
-slept tabs show the original title and url (plain text). reload restores the page; nothing goes to graveyard.
+suspended tabs show the original title and url (plain text). reload restores the page; nothing goes to archive.
 
-![slept tab](docs/screenshots/sleep.png)
+![suspended tab](docs/screenshots/suspend.png)
 
-### graveyard
+### archive
 
-closed tabs land here. click a title to restore. grouped by day with the rule that closed each tab.
+archived tabs land here. click a title to restore. grouped by day with the rule that archived each tab.
 
-![graveyard tab](docs/screenshots/graveyard.png)
+![archive tab](docs/screenshots/archive.png)
 
 ### logs
 
-plain-text dev log in storage: cycles, closes, sleeps, restores. not a per-tab audit trail.
+plain-text dev log in storage: cycles, archives, suspends, restores. not a per-tab audit trail.
 
 ![logs tab](docs/screenshots/logs.png)
 
 ### settings
 
-evaluation interval and graveyard retention. saves immediately; interval change reschedules the alarm.
+evaluation interval and archive retention. saves immediately; interval change reschedules the alarm.
 
 ![settings tab](docs/screenshots/settings.png)
 

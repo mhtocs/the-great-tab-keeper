@@ -5,7 +5,7 @@ import { specificityScore } from './specificity'
 describe('specificityScore', () => {
   // ac 8: idea.md example, 1 vs 1+3+2=6
   it('scores inactive-only rule as 1', () => {
-    const parsed = parseRule('close inactive>2h')
+    const parsed = parseRule('archive inactive>2h')
     expect(parsed.ok).toBe(true)
     if (parsed.ok) {
       expect(specificityScore(parsed.rule)).toBe(1)
@@ -13,7 +13,7 @@ describe('specificityScore', () => {
   })
 
   it('sums weights for multiple conditions', () => {
-    const parsed = parseRule('close inactive>30d url=*youtube.com* pinned=false')
+    const parsed = parseRule('archive inactive>30d url=*youtube.com* pinned=false')
     expect(parsed.ok).toBe(true)
     if (parsed.ok) {
       expect(specificityScore(parsed.rule)).toBe(7)
@@ -21,7 +21,7 @@ describe('specificityScore', () => {
   })
 
   it('scores url condition with weight 4', () => {
-    const parsed = parseRule('close url=*youtube.com/*')
+    const parsed = parseRule('archive url=*youtube.com/*')
     expect(parsed.ok).toBe(true)
     if (parsed.ok) {
       expect(specificityScore(parsed.rule)).toBe(4)

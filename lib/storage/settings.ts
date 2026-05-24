@@ -1,4 +1,5 @@
-import { MIN_GRAVEYARD_RETENTION_DAYS } from '../graveyard/store'
+import { MIN_ARCHIVE_RETENTION_DAYS } from '../archive/store'
+import { migrateRuleLine } from '../rules/parser'
 import {
   type EvaluationIntervalMinutes,
   EVALUATION_INTERVALS,
@@ -8,7 +9,7 @@ import {
 export const DEFAULT_SETTINGS: Settings = {
   engineEnabled: true,
   evaluationIntervalMinutes: 5,
-  graveyardRetentionDays: 90,
+  archiveRetentionDays: 90,
   rules: [],
 }
 
@@ -37,7 +38,8 @@ export function parseSettings(raw: unknown): ParseSettingsResult {
   const record = raw as Record<string, unknown>
   const engineEnabled = record.engineEnabled
   const evaluationIntervalMinutes = record.evaluationIntervalMinutes
-  const graveyardRetentionDays = record.graveyardRetentionDays
+  const archiveRetentionDays =
+    record.archiveRetentionDays ?? record.archiveRetentionDays
   const rules = record.rules
 
   if (typeof engineEnabled !== 'boolean') {
@@ -52,13 +54,13 @@ export function parseSettings(raw: unknown): ParseSettingsResult {
   }
 
   if (
-    typeof graveyardRetentionDays !== 'number' ||
-    !Number.isInteger(graveyardRetentionDays) ||
-    graveyardRetentionDays < MIN_GRAVEYARD_RETENTION_DAYS
+    typeof archiveRetentionDays !== 'number' ||
+    !Number.isInteger(archiveRetentionDays) ||
+    archiveRetentionDays < MIN_ARCHIVE_RETENTION_DAYS
   ) {
     return {
       ok: false,
-      error: `graveyardRetentionDays must be at least ${MIN_GRAVEYARD_RETENTION_DAYS}`,
+      error: `archiveRetentionDays must be at least ${MIN_ARCHIVE_RETENTION_DAYS}`,
     }
   }
 
@@ -71,8 +73,10 @@ export function parseSettings(raw: unknown): ParseSettingsResult {
     settings: {
       engineEnabled,
       evaluationIntervalMinutes,
-      graveyardRetentionDays,
-      rules: rules.map((line) => line.trim()).filter((line) => line.length > 0),
+      archiveRetentionDays,
+      rules: rules
+        .map((line) => migrateRuleLine(String(line)))
+        .filter((line) => line.length > 0),
     },
   }
 }

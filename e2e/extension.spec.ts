@@ -1,5 +1,5 @@
 import { DEFAULT_RULES } from '../lib/defaults/rules'
-import type { DevLogEntry, GraveyardEntry, Settings } from '../lib/storage/schema'
+import type { DevLogEntry, ArchiveEntry, Settings } from '../lib/storage/schema'
 import { initialSettings } from '../lib/defaults/seed'
 import {
   clickDashboardTab,
@@ -20,7 +20,7 @@ test.beforeEach(async ({ context }) => {
   await storageClear(context)
   await storageSet(context, {
     settings: initialSettings(),
-    graveyard: [],
+    archive: [],
     devLog: [],
     activityCache: {},
   })
@@ -46,25 +46,25 @@ test('rejects invalid rules on save without persisting', async ({ context, dashb
   await page.close()
 })
 
-test('restores graveyard entry from dashboard', async ({ context, dashboardUrl }) => {
-  const entry: GraveyardEntry = {
-    id: 'e2e-graveyard-1',
+test('restores archive entry from dashboard', async ({ context, dashboardUrl }) => {
+  const entry: ArchiveEntry = {
+    id: 'e2e-archive-1',
     url: 'https://example.com/e2e-restore',
     title: 'e2e restore me',
-    closedAt: Date.now(),
-    action: 'close',
-    ruleText: 'close inactive>1h',
+    archivedAt: Date.now(),
+    action: 'archive',
+    ruleText: 'archive inactive>1h',
   }
-  await storageSet(context, { graveyard: [entry] })
+  await storageSet(context, { archive: [entry] })
 
   const page = await openDashboard(context, dashboardUrl)
-  await clickDashboardTab(page, 'graveyard')
+  await clickDashboardTab(page, 'archive')
   await page.getByRole('button', { name: 'e2e restore me' }).click()
 
   await expect
     .poll(async () => {
-      const stored = (await storageGet(context, 'graveyard')) as { graveyard: GraveyardEntry[] }
-      return stored.graveyard?.length ?? -1
+      const stored = (await storageGet(context, 'archive')) as { archive: ArchiveEntry[] }
+      return stored.archive?.length ?? -1
     })
     .toBe(0)
 
@@ -82,7 +82,7 @@ test('engine off prevents evaluation from closing tabs', async ({ context, dashb
     settings: {
       ...initialSettings(),
       engineEnabled: false,
-      rules: ['close url=example.com'],
+      rules: ['archive url=example.com'],
     },
   })
 
@@ -127,7 +127,7 @@ test('saves valid rules and persists to storage', async ({ context, dashboardUrl
   const page = await openDashboard(context, dashboardUrl)
   await page.locator('textarea').waitFor()
 
-  const rules = ['keep pinned=true', 'close inactive>1h']
+  const rules = ['keep pinned=true', 'archive inactive>1h']
   await page.locator('textarea').fill(rules.join('\n'))
   await page.getByRole('button', { name: 'save rules' }).click()
 
@@ -189,21 +189,21 @@ test('header shows last run stats after run now', async ({ context, dashboardUrl
   await page.close()
 })
 
-test('graveyard tab shows empty state', async ({ context, dashboardUrl }) => {
+test('archive tab shows empty state', async ({ context, dashboardUrl }) => {
   const page = await openDashboard(context, dashboardUrl)
-  await clickDashboardTab(page, 'graveyard')
+  await clickDashboardTab(page, 'archive')
   await expect(page.getByText('empty', { exact: true })).toBeVisible()
   await page.close()
 })
 
-test('evaluation closes matching tab and adds graveyard entry', async ({
+test('evaluation archives matching tab and adds archive entry', async ({
   context,
   dashboardUrl,
 }) => {
   await storageSet(context, {
     settings: {
       ...initialSettings(),
-      rules: ['close url=example.com/e2e-victim'],
+      rules: ['archive url=example.com/e2e-victim'],
     },
   })
 
@@ -216,8 +216,8 @@ test('evaluation closes matching tab and adds graveyard entry', async ({
 
   await expect
     .poll(async () => {
-      const stored = (await storageGet(context, 'graveyard')) as { graveyard: GraveyardEntry[] }
-      return stored.graveyard?.some((entry) => entry.url.includes('e2e-victim')) ?? false
+      const stored = (await storageGet(context, 'archive')) as { archive: ArchiveEntry[] }
+      return stored.archive?.some((entry) => entry.url.includes('e2e-victim')) ?? false
     })
     .toBe(true)
 })
@@ -245,18 +245,18 @@ test('settings interval change reschedules evaluation alarm', async ({ context, 
 })
 
 test('restore writes a line to dev log', async ({ context, dashboardUrl }) => {
-  const entry: GraveyardEntry = {
+  const entry: ArchiveEntry = {
     id: 'e2e-log-restore',
     url: 'https://example.com/e2e-log-restore',
     title: 'log restore target',
-    closedAt: Date.now(),
-    action: 'close',
-    ruleText: 'close inactive>1h',
+    archivedAt: Date.now(),
+    action: 'archive',
+    ruleText: 'archive inactive>1h',
   }
-  await storageSet(context, { graveyard: [entry] })
+  await storageSet(context, { archive: [entry] })
 
   const page = await openDashboard(context, dashboardUrl)
-  await clickDashboardTab(page, 'graveyard')
+  await clickDashboardTab(page, 'archive')
   await page.getByRole('button', { name: 'log restore target' }).click()
 
   await clickDashboardTab(page, 'logs')

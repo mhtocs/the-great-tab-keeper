@@ -1,24 +1,24 @@
-import type { GraveyardEntry } from '../storage/schema'
+import type { ArchiveEntry } from '../storage/schema'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
-export type GraveyardDayGroup = {
+export type ArchiveDayGroup = {
   dayKey: string
   label: string
-  entries: GraveyardEntry[]
+  entries: ArchiveEntry[]
 }
 
-function graveyardDayKey(closedAtMs: number): string {
-  const date = new Date(closedAtMs)
+function archiveDayKey(archivedAtMs: number): string {
+  const date = new Date(archivedAtMs)
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
 
-function graveyardDayLabel(dayKey: string, nowMs: number): string {
-  const todayKey = graveyardDayKey(nowMs)
-  const yesterdayKey = graveyardDayKey(nowMs - MS_PER_DAY)
+function archiveDayLabel(dayKey: string, nowMs: number): string {
+  const todayKey = archiveDayKey(nowMs)
+  const yesterdayKey = archiveDayKey(nowMs - MS_PER_DAY)
   if (dayKey === todayKey) {
     return 'today'
   }
@@ -33,14 +33,14 @@ function graveyardDayLabel(dayKey: string, nowMs: number): string {
   })
 }
 
-export function groupGraveyardEntriesByDay(
-  entries: GraveyardEntry[],
+export function groupArchiveEntriesByDay(
+  entries: ArchiveEntry[],
   nowMs = Date.now(),
-): GraveyardDayGroup[] {
-  const byDay = new Map<string, GraveyardEntry[]>()
+): ArchiveDayGroup[] {
+  const byDay = new Map<string, ArchiveEntry[]>()
 
   for (const entry of entries) {
-    const key = graveyardDayKey(entry.closedAt)
+    const key = archiveDayKey(entry.archivedAt)
     const bucket = byDay.get(key)
     if (bucket) {
       bucket.push(entry)
@@ -53,7 +53,7 @@ export function groupGraveyardEntriesByDay(
     .sort(([a], [b]) => b.localeCompare(a))
     .map(([dayKey, dayEntries]) => ({
       dayKey,
-      label: graveyardDayLabel(dayKey, nowMs),
-      entries: [...dayEntries].sort((a, b) => b.closedAt - a.closedAt),
+      label: archiveDayLabel(dayKey, nowMs),
+      entries: [...dayEntries].sort((a, b) => b.archivedAt - a.archivedAt),
     }))
 }

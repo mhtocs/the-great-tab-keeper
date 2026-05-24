@@ -1,12 +1,12 @@
-import { appendDevLogEntry } from '../logs/dev-log'
+import { appendDevLogEntry, normalizeDevLogEntries } from '../logs/dev-log'
 import type {
   ActivityCache,
+  ArchiveEntry,
   DevLogEntry,
-  GraveyardEntry,
   LastRunSummary,
   Settings,
 } from './schema'
-import { STORAGE_KEYS } from './schema'
+import { LEGACY_STORAGE_KEYS, STORAGE_KEYS } from './schema'
 import { DEFAULT_SETTINGS, parseSettings } from './settings'
 
 function storageGet<T>(keys: string | string[]): Promise<Record<string, T>> {
@@ -35,6 +35,39 @@ function storageSet(items: Record<string, unknown>): Promise<void> {
   })
 }
 
+function normalizeArchiveEntry(raw: unknown): ArchiveEntry | null {
+  if (!raw || typeof raw !== 'object') {
+    return null
+  }
+  const entry = raw as Record<string, unknown>
+  const id = entry.id
+  const url = entry.url
+  const title = entry.title
+  const archivedAt = entry.archivedAt ?? entry.archivedAt
+  const action = entry.action === 'archive' || entry.action === 'archive' ? 'archive' : null
+  const ruleText = entry.ruleText
+  if (
+    typeof id !== 'string' ||
+    typeof url !== 'string' ||
+    typeof title !== 'string' ||
+    typeof archivedAt !== 'number' ||
+    action !== 'archive' ||
+    typeof ruleText !== 'string'
+  ) {
+    return null
+  }
+  const favicon = entry.favicon
+  return {
+    id,
+    url,
+    title,
+    ...(typeof favicon === 'string' ? { favicon } : {}),
+    archivedAt,
+    action,
+    ruleText,
+  }
+}
+
 export async function readSettingsRaw(): Promise<unknown> {
   const result = await storageGet<unknown>(STORAGE_KEYS.settings)
   return result[STORAGE_KEYS.settings]
@@ -57,14 +90,23 @@ export async function writeSettings(settings: Settings): Promise<void> {
   await storageSet({ [STORAGE_KEYS.settings]: parsed.settings })
 }
 
-export async function readGraveyard(): Promise<GraveyardEntry[]> {
-  const result = await storageGet<GraveyardEntry[]>(STORAGE_KEYS.graveyard)
-  const entries = result[STORAGE_KEYS.graveyard]
-  return Array.isArray(entries) ? entries : []
+export async function readArchive(): Promise<ArchiveEntry[]> {
+  const result = await storageGet<unknown>([
+    STORAGE_KEYS.archive,
+    LEGACY_STORAGE_KEYS.archive,
+  ])
+  const raw =
+    result[STORAGE_KEYS.archive] ?? result[LEGACY_STORAGE_KEYS.archive]
+  if (!Array.isArray(raw)) {
+    return []
+  }
+  return raw
+    .map(normalizeArchiveEntry)
+    .filter((entry): entry is ArchiveEntry => entry !== null)
 }
 
-export async function writeGraveyard(entries: GraveyardEntry[]): Promise<void> {
-  await storageSet({ [STORAGE_KEYS.graveyard]: entries })
+export async function writeArchive(entries: ArchiveEntry[]): Promise<void> {
+  await storageSet({ [STORAGE_KEYS.archive]: entries })
 }
 
 export async function readActivityCache(): Promise<ActivityCache> {
@@ -98,7 +140,12 @@ export async function readDevLog(): Promise<DevLogEntry[]> {
   if (!Array.isArray(log)) {
     return []
   }
-  return log.filter(isDevLogEntry)
+  const entries = log.filter(isDevLogEntry)
+  const normalized = normalizeDevLogEntries(entries)
+  if (normalized.length < entries.length) {
+    await writeDevLog(normalized)
+  }
+  return normalized
 }
 
 export async function writeDevLog(entries: DevLogEntry[]): Promise<void> {

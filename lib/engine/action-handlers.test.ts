@@ -4,14 +4,14 @@ import { createActionHandlers } from './action-handlers'
 describe('action handlers', () => {
   const tab = { tabId: 42, url: 'https://example.com', title: 'example' }
 
-  it('keep does not remove tab or write graveyard', async () => {
+  it('keep does not remove tab or write archive', async () => {
     const removeTab = vi.fn()
-    const writeGraveyard = vi.fn()
+    const writeArchive = vi.fn()
     const handlers = createActionHandlers({
       removeTab,
-      sleepTab: vi.fn(),
-      readGraveyard: async () => [],
-      writeGraveyard,
+      suspendTab: vi.fn(),
+      readArchive: async () => [],
+      writeArchive,
     })
 
     const result = await handlers.keep({
@@ -21,44 +21,44 @@ describe('action handlers', () => {
 
     expect(result).toEqual({ tabRemoved: false })
     expect(removeTab).not.toHaveBeenCalled()
-    expect(writeGraveyard).not.toHaveBeenCalled()
+    expect(writeArchive).not.toHaveBeenCalled()
   })
 
   // ac 2
-  it('close removes tab and appends graveyard entry', async () => {
+  it('archive removes tab and appends archive entry', async () => {
     const removeTab = vi.fn().mockResolvedValue(undefined)
-    const writeGraveyard = vi.fn().mockResolvedValue(undefined)
+    const writeArchive = vi.fn().mockResolvedValue(undefined)
     const handlers = createActionHandlers({
       removeTab,
-      sleepTab: vi.fn(),
-      readGraveyard: async () => [],
-      writeGraveyard,
+      suspendTab: vi.fn(),
+      readArchive: async () => [],
+      writeArchive,
     })
 
-    const result = await handlers.close({
+    const result = await handlers.archive({
       tab,
-      ruleText: 'close inactive>30d',
+      ruleText: 'archive inactive>30d',
     })
 
     expect(result.tabRemoved).toBe(true)
-    expect(result.graveyardEntryId).toBeDefined()
+    expect(result.archiveEntryId).toBeDefined()
     expect(removeTab).toHaveBeenCalledWith(42)
-    expect(writeGraveyard).toHaveBeenCalledOnce()
-    const saved = writeGraveyard.mock.calls[0]![0] as { url: string; ruleText: string }[]
+    expect(writeArchive).toHaveBeenCalledOnce()
+    const saved = writeArchive.mock.calls[0]![0] as { url: string; ruleText: string }[]
     expect(saved).toHaveLength(1)
     expect(saved[0]!.url).toBe('https://example.com')
-    expect(saved[0]!.ruleText).toBe('close inactive>30d')
+    expect(saved[0]!.ruleText).toBe('archive inactive>30d')
   })
 
   // ac 15
-  it('discard removes tab without graveyard write', async () => {
+  it('discard removes tab without archive write', async () => {
     const removeTab = vi.fn().mockResolvedValue(undefined)
-    const writeGraveyard = vi.fn()
+    const writeArchive = vi.fn()
     const handlers = createActionHandlers({
       removeTab,
-      sleepTab: vi.fn(),
-      readGraveyard: async () => [],
-      writeGraveyard,
+      suspendTab: vi.fn(),
+      readArchive: async () => [],
+      writeArchive,
     })
 
     const result = await handlers.discard({
@@ -68,33 +68,33 @@ describe('action handlers', () => {
 
     expect(result).toEqual({ tabRemoved: true })
     expect(removeTab).toHaveBeenCalledWith(42)
-    expect(writeGraveyard).not.toHaveBeenCalled()
+    expect(writeArchive).not.toHaveBeenCalled()
   })
 
-  it('sleep shows slept page without graveyard write', async () => {
+  it('suspend shows suspended page without archive write', async () => {
     const removeTab = vi.fn()
-    const sleepTab = vi.fn().mockResolvedValue(true)
-    const writeGraveyard = vi.fn()
+    const suspendTab = vi.fn().mockResolvedValue(true)
+    const writeArchive = vi.fn()
     const handlers = createActionHandlers({
       removeTab,
-      sleepTab,
-      readGraveyard: async () => [],
-      writeGraveyard,
+      suspendTab,
+      readArchive: async () => [],
+      writeArchive,
     })
 
-    const result = await handlers.sleep({
+    const result = await handlers.suspend({
       tab,
-      ruleText: 'sleep inactive>2h',
+      ruleText: 'suspend inactive>2h',
     })
 
     expect(result).toEqual({ tabRemoved: false, tabDiscarded: true })
-    expect(sleepTab).toHaveBeenCalledWith({
+    expect(suspendTab).toHaveBeenCalledWith({
       tabId: 42,
       url: 'https://example.com',
       title: 'example',
       favicon: undefined,
     })
     expect(removeTab).not.toHaveBeenCalled()
-    expect(writeGraveyard).not.toHaveBeenCalled()
+    expect(writeArchive).not.toHaveBeenCalled()
   })
 })

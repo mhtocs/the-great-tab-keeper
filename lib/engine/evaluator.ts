@@ -64,7 +64,7 @@ export function evaluateTab(
     }
   }
 
-  if (resolvedAction === 'sleep' && tab.discarded) {
+  if (resolvedAction === 'suspend' && tab.discarded) {
     return {
       matchedRules,
       winner,
@@ -75,14 +75,14 @@ export function evaluateTab(
     }
   }
 
-  if (resolvedAction === 'sleep' && tab.slept) {
+  if (resolvedAction === 'suspend' && tab.suspended) {
     return {
       matchedRules,
       winner,
       resolvedAction,
       resolutionReason: reason,
       executed: false,
-      blockReason: 'slept',
+      blockReason: 'suspended',
     }
   }
 

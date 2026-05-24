@@ -11,7 +11,7 @@ export type InactiveCondition = {
 }
 
 export type BooleanTabCondition = {
-  kind: 'pinned' | 'audible' | 'active' | 'slept'
+  kind: 'pinned' | 'audible' | 'active' | 'suspended'
   value: boolean
 }
 

@@ -22,32 +22,32 @@ describe('toTabEvaluationInput', () => {
       pinned: false,
       audible: false,
       active: true,
-      slept: false,
+      suspended: false,
       discarded: false,
       inactiveMs: 120_000,
       lastAccessedMs: now - 120_000,
     })
   })
 
-  it('marks slept=true for slept placeholder url', () => {
+  it('marks suspended=true for suspended placeholder url', () => {
     const input = toTabEvaluationInput(
       {
         id: 9,
-        url: 'chrome-extension://id/ui/slept/index.html?tabId=9',
+        url: 'chrome-extension://id/ui/suspended/index.html?tabId=9',
       },
       undefined,
       {},
       Date.now(),
     )
-    expect(input?.slept).toBe(true)
+    expect(input?.suspended).toBe(true)
   })
 
-  it('uses sleptAt for inactive when chrome lastAccessed is missing', () => {
+  it('uses suspendedAt for inactive when chrome lastAccessed is missing', () => {
     const now = 1_000_000
     const input = toTabEvaluationInput(
       {
         id: 9,
-        url: 'chrome-extension://id/ui/slept/index.html?tabId=9',
+        url: 'chrome-extension://id/ui/suspended/index.html?tabId=9',
       },
       undefined,
       {},

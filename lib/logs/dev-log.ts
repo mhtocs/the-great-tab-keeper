@@ -1,7 +1,13 @@
 import type { DevLogEntry } from '../storage/schema'
 import type { EvaluationCycleResult } from '../engine/evaluation-cycle'
 
-export const DEV_LOG_MAX_ENTRIES = 1000
+export const DEV_LOG_MAX_ENTRIES = 40
+
+export function normalizeDevLogEntries(entries: DevLogEntry[]): DevLogEntry[] {
+  return [...entries]
+    .sort((a, b) => b.at - a.at)
+    .slice(0, DEV_LOG_MAX_ENTRIES)
+}
 
 export function appendDevLogEntry(
   entries: DevLogEntry[],
@@ -13,9 +19,7 @@ export function appendDevLogEntry(
     at: atMs,
     message,
   }
-  return [...entries, entry]
-    .sort((a, b) => b.at - a.at)
-    .slice(0, DEV_LOG_MAX_ENTRIES)
+  return normalizeDevLogEntries([...entries, entry])
 }
 
 export function formatCycleResultMessage(result: EvaluationCycleResult): string {
@@ -28,11 +32,11 @@ export function formatCycleResultMessage(result: EvaluationCycleResult): string 
 
   const base = `cycle finished, ${result.tabsEvaluated} evaluated`
   const parts: string[] = []
-  if (result.tabsClosed > 0) {
-    parts.push(`${result.tabsClosed} closed`)
+  if (result.tabsArchived > 0) {
+    parts.push(`${result.tabsArchived} archived`)
   }
-  if (result.tabsSlept > 0) {
-    parts.push(`${result.tabsSlept} slept`)
+  if (result.tabsSuspended > 0) {
+    parts.push(`${result.tabsSuspended} suspended`)
   }
   if (result.tabsRemoved > 0) {
     parts.push(`${result.tabsRemoved} removed`)
@@ -44,7 +48,7 @@ export function formatCycleResultMessage(result: EvaluationCycleResult): string 
 }
 
 export function formatDevLogText(entries: DevLogEntry[]): string {
-  return [...entries]
+  return [...normalizeDevLogEntries(entries)]
     .sort((a, b) => a.at - b.at)
     .map((entry) => `${new Date(entry.at).toISOString()}  ${entry.message}`)
     .join('\n')

@@ -1,9 +1,9 @@
 import { EXTENSION_LOG_PREFIX } from '../lib/product-name'
 import { runTabYardEvaluationCycle } from './evaluation-runner'
-import { restoreFromGraveyard } from './graveyard-restore'
+import { restoreFromArchive } from './archive-restore'
 import { registerRuntimeMessageListener } from './messages'
 import { registerSchedulerListeners, rescheduleEvaluationAlarm } from './scheduler'
-import { clearSleptTab, restoreSleptTab } from './sleep-tab'
+import { clearSuspendedTab, restoreSuspendedTab } from './suspend-tab'
 import { initializeExtension } from './setup'
 import { syncTabActivated, syncTabRemoved } from '../lib/activity/sync'
 import {
@@ -32,8 +32,8 @@ function registerActivityListeners(): void {
   })
 
   chrome.tabs.onRemoved.addListener((tabId) => {
-    void clearSleptTab(tabId).catch((err: unknown) => {
-      console.error(`${EXTENSION_LOG_PREFIX} slept tab cleanup failed`, err)
+    void clearSuspendedTab(tabId).catch((err: unknown) => {
+      console.error(`${EXTENSION_LOG_PREFIX} suspended tab cleanup failed`, err)
     })
     void syncTabRemoved(activityPorts, tabId).catch((err: unknown) => {
       console.error(`${EXTENSION_LOG_PREFIX} tab removed sync failed`, err)
@@ -46,8 +46,8 @@ registerActivityListeners()
 registerSchedulerListeners(runTabYardEvaluationCycle)
 registerRuntimeMessageListener({
   runCycle: runTabYardEvaluationCycle,
-  restoreGraveyard: restoreFromGraveyard,
-  restoreSleptTab,
+  restoreArchive: restoreFromArchive,
+  restoreSuspendedTab,
   rescheduleAlarm: rescheduleEvaluationAlarm,
 })
 

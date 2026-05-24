@@ -1,7 +1,7 @@
-import type { GraveyardEntry } from '../storage/schema'
+import type { ArchiveEntry } from '../storage/schema'
 import type { ActionContext, ActionHandlers, ActionResult } from './actions'
 
-export type SleepTabInput = {
+export type SuspendTabInput = {
   tabId: number
   url: string
   title: string
@@ -10,32 +10,32 @@ export type SleepTabInput = {
 
 export type ActionHandlerDeps = {
   removeTab: (tabId: number) => Promise<void>
-  sleepTab: (input: SleepTabInput) => Promise<boolean>
-  readGraveyard: () => Promise<GraveyardEntry[]>
-  writeGraveyard: (entries: GraveyardEntry[]) => Promise<void>
+  suspendTab: (input: SuspendTabInput) => Promise<boolean>
+  readArchive: () => Promise<ArchiveEntry[]>
+  writeArchive: (entries: ArchiveEntry[]) => Promise<void>
 }
 
 async function noopKeep(): Promise<ActionResult> {
   return { tabRemoved: false }
 }
 
-async function closeTab(
+async function archiveTab(
   deps: ActionHandlerDeps,
   ctx: ActionContext,
 ): Promise<ActionResult> {
-  const entry: GraveyardEntry = {
+  const entry: ArchiveEntry = {
     id: crypto.randomUUID(),
     url: ctx.tab.url,
     title: ctx.tab.title,
     favicon: ctx.tab.favicon,
-    closedAt: Date.now(),
-    action: 'close',
+    archivedAt: Date.now(),
+    action: 'archive',
     ruleText: ctx.ruleText,
   }
-  const graveyard = await deps.readGraveyard()
-  await deps.writeGraveyard([...graveyard, entry])
+  const archive = await deps.readArchive()
+  await deps.writeArchive([...archive, entry])
   await deps.removeTab(ctx.tab.tabId)
-  return { tabRemoved: true, graveyardEntryId: entry.id }
+  return { tabRemoved: true, archiveEntryId: entry.id }
 }
 
 async function discardTab(
@@ -46,11 +46,11 @@ async function discardTab(
   return { tabRemoved: true }
 }
 
-async function sleepTab(
+async function suspendTabAction(
   deps: ActionHandlerDeps,
   ctx: ActionContext,
 ): Promise<ActionResult> {
-  const tabDiscarded = await deps.sleepTab({
+  const tabDiscarded = await deps.suspendTab({
     tabId: ctx.tab.tabId,
     url: ctx.tab.url,
     title: ctx.tab.title,
@@ -62,8 +62,8 @@ async function sleepTab(
 export function createActionHandlers(deps: ActionHandlerDeps): ActionHandlers {
   return {
     keep: noopKeep,
-    close: (ctx) => closeTab(deps, ctx),
+    archive: (ctx) => archiveTab(deps, ctx),
     discard: (ctx) => discardTab(deps, ctx),
-    sleep: (ctx) => sleepTab(deps, ctx),
+    suspend: (ctx) => suspendTabAction(deps, ctx),
   }
 }

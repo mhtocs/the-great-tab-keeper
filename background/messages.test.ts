@@ -3,11 +3,11 @@ import { dispatchRuntimeMessage } from './messages'
 
 describe('dispatchRuntimeMessage', () => {
   const runCycle = vi.fn().mockResolvedValue(undefined)
-  const restoreGraveyard = vi.fn().mockResolvedValue({ ok: true, tabId: 1, entries: [] })
-  const restoreSleptTab = vi.fn().mockResolvedValue({ ok: true })
+  const restoreArchive = vi.fn().mockResolvedValue({ ok: true, tabId: 1, entries: [] })
+  const restoreSuspendedTab = vi.fn().mockResolvedValue({ ok: true })
   const rescheduleAlarm = vi.fn().mockResolvedValue(undefined)
 
-  const deps = { runCycle, restoreGraveyard, restoreSleptTab, rescheduleAlarm }
+  const deps = { runCycle, restoreArchive, restoreSuspendedTab, rescheduleAlarm }
 
   it('runs evaluation cycle', async () => {
     const result = await dispatchRuntimeMessage({ type: 'run-evaluation-cycle' }, deps)
@@ -15,12 +15,12 @@ describe('dispatchRuntimeMessage', () => {
     expect(runCycle).toHaveBeenCalledOnce()
   })
 
-  it('restores graveyard entry', async () => {
+  it('restores archive entry', async () => {
     const result = await dispatchRuntimeMessage(
-      { type: 'restore-graveyard', entryId: 'e1' },
+      { type: 'restore-archive', entryId: 'e1' },
       deps,
     )
-    expect(restoreGraveyard).toHaveBeenCalledWith('e1')
+    expect(restoreArchive).toHaveBeenCalledWith('e1')
     expect(result).toMatchObject({ ok: true })
   })
 
@@ -30,9 +30,9 @@ describe('dispatchRuntimeMessage', () => {
     expect(rescheduleAlarm).toHaveBeenCalledOnce()
   })
 
-  it('restores slept tab', async () => {
-    const result = await dispatchRuntimeMessage({ type: 'restore-slept-tab', tabId: 8 }, deps)
-    expect(restoreSleptTab).toHaveBeenCalledWith(8)
+  it('restores suspended tab', async () => {
+    const result = await dispatchRuntimeMessage({ type: 'restore-suspended-tab', tabId: 8 }, deps)
+    expect(restoreSuspendedTab).toHaveBeenCalledWith(8)
     expect(result).toEqual({ ok: true })
   })
 

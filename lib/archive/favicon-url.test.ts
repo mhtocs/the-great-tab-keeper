@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { graveyardFaviconSrc } from './favicon-url'
+import { archiveFaviconSrc } from './favicon-url'
 
-describe('graveyardFaviconSrc', () => {
+describe('archiveFaviconSrc', () => {
   it('returns stored favicon when present', () => {
     expect(
-      graveyardFaviconSrc({
+      archiveFaviconSrc({
         url: 'https://example.com/',
         favicon: 'https://example.com/icon.png',
       }),
@@ -12,7 +12,7 @@ describe('graveyardFaviconSrc', () => {
   })
 
   it('falls back to host favicon service from url', () => {
-    expect(graveyardFaviconSrc({ url: 'https://docs.google.com/doc' })).toBe(
+    expect(archiveFaviconSrc({ url: 'https://docs.google.com/doc' })).toBe(
       'https://www.google.com/s2/favicons?domain=docs.google.com&sz=32',
     )
   })

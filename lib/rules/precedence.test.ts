@@ -14,7 +14,7 @@ function tab(overrides: Partial<TabMatchContext> = {}): TabMatchContext {
     pinned: false,
     audible: false,
     active: false,
-    slept: false,
+    suspended: false,
     inactiveMs: ELEVEN_MINUTES_MS,
     ...overrides,
   }
@@ -37,8 +37,8 @@ function winnerAfterMatch(ruleLines: string[], ctx: TabMatchContext) {
 describe('resolveWinner', () => {
   // ac 8
   it('picks rule with higher specificity score', () => {
-    const generic = parseRule('close inactive>2h')
-    const specific = parseRule('close inactive>30d url=*youtube.com* pinned=false')
+    const generic = parseRule('archive inactive>2h')
+    const specific = parseRule('archive inactive>30d url=*youtube.com* pinned=false')
     expect(generic.ok && specific.ok).toBe(true)
     if (generic.ok && specific.ok) {
       const winner = resolveWinner([generic.rule, specific.rule])
@@ -48,92 +48,92 @@ describe('resolveWinner', () => {
     }
   })
 
-  it('picks close over sleep when specificity is equal', () => {
-    const sleepRule = parseRule('sleep inactive>2h url=*youtube.com*')
-    const closeRule = parseRule('close inactive>2h url=*youtube.com*')
-    expect(sleepRule.ok && closeRule.ok).toBe(true)
-    if (sleepRule.ok && closeRule.ok) {
-      const winner = resolveWinner([sleepRule.rule, closeRule.rule])
-      expect(winner?.action).toBe('close')
+  it('picks archive over suspend when specificity is equal', () => {
+    const suspendRule = parseRule('suspend inactive>2h url=*youtube.com*')
+    const archiveRule = parseRule('archive inactive>2h url=*youtube.com*')
+    expect(suspendRule.ok && archiveRule.ok).toBe(true)
+    if (suspendRule.ok && archiveRule.ok) {
+      const winner = resolveWinner([suspendRule.rule, archiveRule.rule])
+      expect(winner?.action).toBe('archive')
     }
   })
 
-  it('picks sleep over discard when specificity is equal', () => {
-    const sleepRule = parseRule('sleep inactive>2h url=*youtube.com*')
+  it('picks suspend over discard when specificity is equal', () => {
+    const suspendRule = parseRule('suspend inactive>2h url=*youtube.com*')
     const discardRule = parseRule('discard inactive>2h url=*youtube.com*')
-    expect(sleepRule.ok && discardRule.ok).toBe(true)
-    if (sleepRule.ok && discardRule.ok) {
-      const winner = resolveWinner([sleepRule.rule, discardRule.rule])
-      expect(winner?.action).toBe('sleep')
+    expect(suspendRule.ok && discardRule.ok).toBe(true)
+    if (suspendRule.ok && discardRule.ok) {
+      const winner = resolveWinner([suspendRule.rule, discardRule.rule])
+      expect(winner?.action).toBe('suspend')
     }
   })
 
   // ac 9
-  it('picks close over discard when specificity is equal', () => {
+  it('picks archive over discard when specificity is equal', () => {
     const discardRule = parseRule('discard inactive>2h url=*youtube.com*')
-    const closeRule = parseRule('close inactive>2h url=*youtube.com*')
-    expect(discardRule.ok && closeRule.ok).toBe(true)
-    if (discardRule.ok && closeRule.ok) {
+    const archiveRule = parseRule('archive inactive>2h url=*youtube.com*')
+    expect(discardRule.ok && archiveRule.ok).toBe(true)
+    if (discardRule.ok && archiveRule.ok) {
       expect(specificityScore(discardRule.rule)).toBe(
-        specificityScore(closeRule.rule),
+        specificityScore(archiveRule.rule),
       )
-      const winner = resolveWinner([discardRule.rule, closeRule.rule])
-      expect(winner?.action).toBe('close')
+      const winner = resolveWinner([discardRule.rule, archiveRule.rule])
+      expect(winner?.action).toBe('archive')
     }
   })
 
-  it('picks keep over close when specificity is equal', () => {
-    const closeRule = parseRule('close url=*docs.google.com*')
+  it('picks keep over archive when specificity is equal', () => {
+    const archiveRule = parseRule('archive url=*docs.google.com*')
     const keepRule = parseRule('keep url=*docs.google.com*')
-    expect(closeRule.ok && keepRule.ok).toBe(true)
-    if (closeRule.ok && keepRule.ok) {
-      const winner = pickWinner(keepRule.rule, closeRule.rule)
+    expect(archiveRule.ok && keepRule.ok).toBe(true)
+    if (archiveRule.ok && keepRule.ok) {
+      const winner = pickWinner(keepRule.rule, archiveRule.rule)
       expect(winner.action).toBe('keep')
     }
   })
 
-  it('picks shield keep over more specific close when both match', () => {
+  it('picks shield keep over more specific archive when both match', () => {
     const keep = parseRule('keep pinned=true')
-    const close = parseRule('close inactive>10m pinned=true')
-    expect(keep.ok && close.ok).toBe(true)
-    if (keep.ok && close.ok) {
-      expect(specificityScore(close.rule)).toBeGreaterThan(specificityScore(keep.rule))
-      const winner = resolveWinner([keep.rule, close.rule])
+    const archive = parseRule('archive inactive>10m pinned=true')
+    expect(keep.ok && archive.ok).toBe(true)
+    if (keep.ok && archive.ok) {
+      expect(specificityScore(archive.rule)).toBeGreaterThan(specificityScore(keep.rule))
+      const winner = resolveWinner([keep.rule, archive.rule])
       expect(winner?.action).toBe('keep')
-      expect(resolutionReason(winner!, [keep.rule, close.rule])).toBe('keep protection')
+      expect(resolutionReason(winner!, [keep.rule, archive.rule])).toBe('keep protection')
     }
   })
 
-  it('picks more specific close over keep url when both match', () => {
+  it('picks more specific archive over keep url when both match', () => {
     const keep = parseRule('keep url=google.com')
-    const close = parseRule('close inactive>10m url=docs.google.com')
-    expect(keep.ok && close.ok).toBe(true)
-    if (keep.ok && close.ok) {
-      const winner = resolveWinner([keep.rule, close.rule])
-      expect(winner?.action).toBe('close')
-      expect(resolutionReason(winner!, [keep.rule, close.rule])).toBe('higher specificity')
+    const archive = parseRule('archive inactive>10m url=docs.google.com')
+    expect(keep.ok && archive.ok).toBe(true)
+    if (keep.ok && archive.ok) {
+      const winner = resolveWinner([keep.rule, archive.rule])
+      expect(winner?.action).toBe('archive')
+      expect(resolutionReason(winner!, [keep.rule, archive.rule])).toBe('higher specificity')
     }
   })
 })
 
 describe('winner after matchRules', () => {
   const keepGoogle = 'keep url=google.com'
-  const closeDocs = 'close inactive>10m url=docs.google.com'
-  const closeGoogle = 'close inactive>10m url=google.com'
-  const closeGoogleGlob = 'close inactive>10m url=*.google.com'
+  const closeDocs = 'archive inactive>10m url=docs.google.com'
+  const closeGoogle = 'archive inactive>10m url=google.com'
+  const closeGoogleGlob = 'archive inactive>10m url=*.google.com'
 
-  it('close docs beats keep google on docs tab when inactive', () => {
+  it('archive docs beats keep google on docs tab when inactive', () => {
     const ctx = tab({
       url: 'https://docs.google.com/spreadsheets/d/abc/edit',
       inactiveMs: ELEVEN_MINUTES_MS,
     })
     const result = winnerAfterMatch([keepGoogle, closeDocs], ctx)
     expect(result.matchedCount).toBe(2)
-    expect(result.action).toBe('close')
+    expect(result.action).toBe('archive')
     expect(result.reason).toBe('higher specificity')
   })
 
-  it('keep google protects mail when close only targets docs', () => {
+  it('keep google protects mail when archive only targets docs', () => {
     const ctx = tab({
       url: 'https://mail.google.com/mail/u/0/#inbox',
       inactiveMs: ELEVEN_MINUTES_MS,
@@ -143,7 +143,7 @@ describe('winner after matchRules', () => {
     expect(result.action).toBe('keep')
   })
 
-  it('keep google beats close google on mail when both use same url pattern', () => {
+  it('keep google beats archive google on mail when both use same url pattern', () => {
     const ctx = tab({
       url: 'https://mail.google.com/mail/u/0/#inbox',
       inactiveMs: ELEVEN_MINUTES_MS,
@@ -154,14 +154,14 @@ describe('winner after matchRules', () => {
     expect(result.reason).toBe('same url keep')
   })
 
-  it('keep google matches mail when glob close does not', () => {
+  it('keep google matches mail when glob archive does not', () => {
     const ctx = tab({ url: 'https://mail.google.com/mail/u/0/' })
     const result = winnerAfterMatch([keepGoogle, closeGoogleGlob], ctx)
     expect(result.matchedCount).toBe(1)
     expect(result.action).toBe('keep')
   })
 
-  // ac 4: default rules, pinned inactive tab resolves to keep, not close
+  // ac 4: default rules, pinned inactive tab resolves to keep, not archive
   it('pinned tab with default rules resolves to keep', () => {
     const ctx = tab({ pinned: true, inactiveMs: 5 * 3_600_000 })
     const result = winnerAfterMatch([...DEFAULT_RULES], ctx)
@@ -169,11 +169,11 @@ describe('winner after matchRules', () => {
     expect(result.action).toBe('keep')
   })
 
-  it('pinned tab blocked when generic close wins resolution', () => {
+  it('pinned tab blocked when generic archive wins resolution', () => {
     const ctx = tab({ pinned: true, inactiveMs: 5 * 3_600_000 })
-    const result = winnerAfterMatch(['close inactive>2h'], ctx)
-    expect(result.action).toBe('close')
-    const winner = parseRule('close inactive>2h')
+    const result = winnerAfterMatch(['archive inactive>2h'], ctx)
+    expect(result.action).toBe('archive')
+    const winner = parseRule('archive inactive>2h')
     if (!winner.ok) {
       return
     }
@@ -183,11 +183,11 @@ describe('winner after matchRules', () => {
     })
   })
 
-  it('pinned tab allowed when close rule declares pinned=true', () => {
+  it('pinned tab allowed when archive rule declares pinned=true', () => {
     const ctx = tab({ pinned: true, inactiveMs: 3 * 24 * 3_600_000 })
-    const result = winnerAfterMatch(['close inactive>2d pinned=true'], ctx)
-    expect(result.action).toBe('close')
-    const winner = parseRule('close inactive>2d pinned=true')
+    const result = winnerAfterMatch(['archive inactive>2d pinned=true'], ctx)
+    expect(result.action).toBe('archive')
+    const winner = parseRule('archive inactive>2d pinned=true')
     if (!winner.ok) {
       return
     }
@@ -197,8 +197,8 @@ describe('winner after matchRules', () => {
 
 describe('resolutionReason', () => {
   it('reports higher specificity when scores differ', () => {
-    const a = parseRule('close inactive>2h')
-    const b = parseRule('close inactive>30d url=*youtube.com* pinned=false')
+    const a = parseRule('archive inactive>2h')
+    const b = parseRule('archive inactive>30d url=*youtube.com* pinned=false')
     if (a.ok && b.ok) {
       const winner = resolveWinner([a.rule, b.rule])!
       expect(resolutionReason(winner, [a.rule, b.rule])).toBe('higher specificity')
@@ -207,10 +207,10 @@ describe('resolutionReason', () => {
 
   it('reports action precedence when scores tie on action', () => {
     const discardRule = parseRule('discard inactive>2h')
-    const closeRule = parseRule('close inactive>2h')
-    if (discardRule.ok && closeRule.ok) {
-      const winner = resolveWinner([discardRule.rule, closeRule.rule])!
-      expect(resolutionReason(winner, [discardRule.rule, closeRule.rule])).toBe(
+    const archiveRule = parseRule('archive inactive>2h')
+    if (discardRule.ok && archiveRule.ok) {
+      const winner = resolveWinner([discardRule.rule, archiveRule.rule])!
+      expect(resolutionReason(winner, [discardRule.rule, archiveRule.rule])).toBe(
         'action precedence',
       )
     }

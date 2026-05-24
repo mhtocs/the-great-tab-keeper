@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCycleStats } from '../shared/composables/use-cycle-stats'
 import DashboardTabs, { type DashboardTab } from '../shared/components/dashboard-tabs.vue'
-import GraveyardTable from '../shared/components/graveyard-table.vue'
+import ArchiveTable from '../shared/components/archive-table.vue'
 import DevLogPanel from '../shared/components/dev-log-panel.vue'
 import RulesEditor from '../shared/components/rules-editor.vue'
 import SettingsPanel from '../shared/components/settings-panel.vue'
@@ -20,8 +20,8 @@ const { statLines, loading: statsLoading } = useCycleStats()
         <div>
           <h1 class="text-xl font-semibold text-gray-800">{{ extensionName }}</h1>
           <p class="mt-1 max-w-md text-sm text-gray-500">
-            plain-text rules to close, discard, or keep tabs on a schedule, with a
-            graveyard to restore what you closed.
+            plain-text rules to archive, discard, suspend, or keep tabs on a schedule, with an
+            archive to restore what you removed.
           </p>
         </div>
         <ul
@@ -37,7 +37,7 @@ const { statLines, loading: statsLoading } = useCycleStats()
 
         <div class="rounded-b border border-t-0 border-gray-300 bg-white">
           <RulesEditor v-if="activeTab === 'rules'" />
-          <GraveyardTable v-else-if="activeTab === 'graveyard'" class="min-h-[28rem]" />
+          <ArchiveTable v-else-if="activeTab === 'archive'" class="min-h-[28rem]" />
           <DevLogPanel v-else-if="activeTab === 'logs'" />
           <SettingsPanel v-else />
         </div>

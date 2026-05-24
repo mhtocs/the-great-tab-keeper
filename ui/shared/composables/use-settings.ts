@@ -97,7 +97,7 @@ export function useSettings() {
   }
 
   async function persistSchedule(
-    patch: Partial<Pick<Settings, 'evaluationIntervalMinutes' | 'graveyardRetentionDays'>>,
+    patch: Partial<Pick<Settings, 'evaluationIntervalMinutes' | 'archiveRetentionDays'>>,
   ): Promise<boolean> {
     scheduleError.value = null
     scheduleMessage.value = null
@@ -129,8 +129,8 @@ export function useSettings() {
     await persistSchedule({ evaluationIntervalMinutes: minutes })
   }
 
-  async function setGraveyardRetentionDays(days: number) {
-    await persistSchedule({ graveyardRetentionDays: days })
+  async function setArchiveRetentionDays(days: number) {
+    await persistSchedule({ archiveRetentionDays: days })
   }
 
   return {
@@ -147,6 +147,6 @@ export function useSettings() {
     runNow,
     setEngineEnabled,
     setEvaluationIntervalMinutes,
-    setGraveyardRetentionDays,
+    setArchiveRetentionDays,
   }
 }

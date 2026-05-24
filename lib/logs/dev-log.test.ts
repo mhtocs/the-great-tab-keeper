@@ -22,19 +22,19 @@ describe('dev log', () => {
         skipped: false,
         tabsEvaluated: 13,
         actionsTaken: 10,
-        tabsClosed: 8,
-        tabsSlept: 2,
+        tabsArchived: 8,
+        tabsSuspended: 2,
         tabsRemoved: 0,
       }),
-    ).toBe('cycle finished, 13 evaluated, 8 closed, 2 slept')
+    ).toBe('cycle finished, 13 evaluated, 8 archived, 2 suspended')
 
     expect(
       formatCycleResultMessage({
         skipped: false,
         tabsEvaluated: 3,
         actionsTaken: 0,
-        tabsClosed: 0,
-        tabsSlept: 0,
+        tabsArchived: 0,
+        tabsSuspended: 0,
         tabsRemoved: 0,
       }),
     ).toBe('cycle finished, 3 evaluated, no actions')
@@ -45,8 +45,8 @@ describe('dev log', () => {
         skipReason: 'engine_off',
         tabsEvaluated: 0,
         actionsTaken: 0,
-        tabsClosed: 0,
-        tabsSlept: 0,
+        tabsArchived: 0,
+        tabsSuspended: 0,
         tabsRemoved: 0,
       }),
     ).toBe('cycle skipped, engine off')

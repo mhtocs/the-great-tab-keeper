@@ -48,13 +48,13 @@ export function inactiveMsForTab(
   tab: TabLastAccessSource,
   cache: ActivityCache,
   nowMs: number,
-  sleptAtMs?: number,
+  suspendedAtMs?: number,
 ): number {
   const last = lastAccessedMs(tab, cache, nowMs)
   let inactive = Math.max(0, nowMs - last)
-  // extension slept pages often lack chrome lastAccessed; use when tab was put to sleep
-  if (sleptAtMs !== undefined && sleptAtMs > 0) {
-    inactive = Math.max(inactive, nowMs - sleptAtMs)
+  // extension suspended pages often lack chrome lastAccessed; use when tab was suspended
+  if (suspendedAtMs !== undefined && suspendedAtMs > 0) {
+    inactive = Math.max(inactive, nowMs - suspendedAtMs)
   }
   return inactive
 }

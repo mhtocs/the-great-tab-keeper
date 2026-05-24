@@ -18,7 +18,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         dashboard: resolve(__dirname, 'ui/dashboard/index.html'),
-        slept: resolve(__dirname, 'ui/slept/index.html'),
+        suspended: resolve(__dirname, 'ui/suspended/index.html'),
         background: resolve(__dirname, 'background/background.ts'),
       },
       output: {

@@ -15,7 +15,7 @@ export type ActionContext = {
 export type ActionResult = {
   tabRemoved: boolean
   tabDiscarded?: boolean
-  graveyardEntryId?: string
+  archiveEntryId?: string
 }
 
 export type ActionHandler = (ctx: ActionContext) => Promise<ActionResult>

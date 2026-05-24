@@ -1,22 +1,22 @@
-import type { GraveyardEntry } from '../storage/schema'
+import type { ArchiveEntry } from '../storage/schema'
 
 export type RestorePorts = {
   openTab: (url: string) => Promise<number | undefined>
 }
 
-export type RestoreGraveyardResult =
-  | { ok: true; tabId: number; entries: GraveyardEntry[] }
-  | { ok: false; error: string; entries: GraveyardEntry[] }
+export type RestoreArchiveResult =
+  | { ok: true; tabId: number; entries: ArchiveEntry[] }
+  | { ok: false; error: string; entries: ArchiveEntry[] }
 
-// ac 3: open tab at saved url and remove entry from graveyard
-export async function restoreGraveyardEntry(
+// ac 3: open tab at saved url and remove entry from archive
+export async function restoreArchiveEntry(
   ports: RestorePorts,
-  entries: GraveyardEntry[],
+  entries: ArchiveEntry[],
   entryId: string,
-): Promise<RestoreGraveyardResult> {
+): Promise<RestoreArchiveResult> {
   const entry = entries.find((item) => item.id === entryId)
   if (!entry) {
-    return { ok: false, error: 'graveyard entry not found', entries }
+    return { ok: false, error: 'archive entry not found', entries }
   }
 
   if (entry.url.length === 0) {

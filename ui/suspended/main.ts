@@ -1,6 +1,6 @@
-import { formatFreedMemory } from '@/lib/slept/format-memory'
-import { getSleptEntry } from '@/lib/slept/store'
-import { readSleptTabs } from '@/lib/storage/chrome-session'
+import { getSuspendedEntry } from '@/lib/suspended/store'
+import { readSuspendedTabs } from '@/lib/storage/chrome-session'
+import { SUSPENDED_BY_LINE } from '@/lib/product-name'
 import '../styles/index.css'
 
 const params = new URLSearchParams(location.search)
@@ -8,8 +8,12 @@ const tabId = Number(params.get('tabId'))
 const reloadButton = document.getElementById('reload') as HTMLButtonElement | null
 const titleEl = document.getElementById('title') as HTMLParagraphElement | null
 const urlEl = document.getElementById('url') as HTMLParagraphElement | null
-const memoryEl = document.getElementById('memory') as HTMLParagraphElement | null
 const errorEl = document.getElementById('error') as HTMLParagraphElement | null
+
+const bylineEl = document.querySelector('main > p.text-sm.text-gray-500')
+if (bylineEl) {
+  bylineEl.textContent = SUSPENDED_BY_LINE
+}
 
 function showError(message: string) {
   if (!errorEl) {
@@ -21,14 +25,14 @@ function showError(message: string) {
 
 function bindReload() {
   if (!Number.isFinite(tabId) || reloadButton === null) {
-    showError('invalid slept tab')
+    showError('invalid suspended tab')
     return
   }
 
   reloadButton.addEventListener('click', () => {
     reloadButton.disabled = true
     void chrome.runtime
-      .sendMessage({ type: 'restore-slept-tab', tabId })
+      .sendMessage({ type: 'restore-suspended-tab', tabId })
       .then((result: { ok?: boolean; error?: string } | undefined) => {
         if (!result?.ok) {
           reloadButton.disabled = false
@@ -42,16 +46,16 @@ function bindReload() {
   })
 }
 
-async function loadSleptInfo() {
+async function loadSuspendedInfo() {
   if (!Number.isFinite(tabId) || titleEl === null || urlEl === null) {
-    showError('invalid slept tab')
+    showError('invalid suspended tab')
     if (reloadButton) {
       reloadButton.disabled = true
     }
     return
   }
 
-  const entry = getSleptEntry(await readSleptTabs(), tabId)
+  const entry = getSuspendedEntry(await readSuspendedTabs(), tabId)
   if (!entry) {
     titleEl.textContent = 'unknown tab'
     urlEl.textContent = 'no saved url for this tab'
@@ -66,14 +70,6 @@ async function loadSleptInfo() {
   titleEl.title = title
   urlEl.textContent = entry.url
   urlEl.title = entry.url
-
-  if (memoryEl && entry.memoryFreedBytes !== undefined) {
-    const label = formatFreedMemory(entry.memoryFreedBytes)
-    if (label) {
-      memoryEl.textContent = `about ${label} freed`
-      memoryEl.hidden = false
-    }
-  }
 }
 
-void loadSleptInfo().then(bindReload)
+void loadSuspendedInfo().then(bindReload)

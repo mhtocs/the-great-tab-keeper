@@ -9,7 +9,7 @@ function tab(overrides: Partial<TabMatchContext> = {}): TabMatchContext {
     pinned: false,
     audible: false,
     active: false,
-    slept: false,
+    suspended: false,
     inactiveMs: 5 * 3_600_000,
     ...overrides,
   }
@@ -27,8 +27,8 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
-  it('blocks close on pinned tab when rule omits pinned=true', () => {
-    const rule = parseRule('close inactive>2h')
+  it('blocks archive on pinned tab when rule omits pinned=true', () => {
+    const rule = parseRule('archive inactive>2h')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
@@ -39,8 +39,8 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
-  it('allows close on pinned tab when rule includes pinned=true', () => {
-    const rule = parseRule('close inactive>2d pinned=true')
+  it('allows archive on pinned tab when rule includes pinned=true', () => {
+    const rule = parseRule('archive inactive>2d pinned=true')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
@@ -50,8 +50,8 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
-  it('blocks close on audible tab when rule omits audible=true', () => {
-    const rule = parseRule('close inactive>2h')
+  it('blocks archive on audible tab when rule omits audible=true', () => {
+    const rule = parseRule('archive inactive>2h')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
@@ -62,8 +62,8 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
-  it('allows close on audible tab when rule includes audible=true', () => {
-    const rule = parseRule('close inactive>2h audible=true')
+  it('allows archive on audible tab when rule includes audible=true', () => {
+    const rule = parseRule('archive inactive>2h audible=true')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
@@ -73,8 +73,8 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
-  it('blocks close on foreground tab when rule omits active=true', () => {
-    const rule = parseRule('close inactive>2h')
+  it('blocks archive on foreground tab when rule omits active=true', () => {
+    const rule = parseRule('archive inactive>2h')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
@@ -85,8 +85,8 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
-  it('allows close on foreground tab when rule includes active=true', () => {
-    const rule = parseRule('close inactive>2h active=true')
+  it('allows archive on foreground tab when rule includes active=true', () => {
+    const rule = parseRule('archive inactive>2h active=true')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
@@ -96,8 +96,8 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
-  it('blocks sleep on pinned tab when rule omits pinned=true', () => {
-    const rule = parseRule('sleep inactive>2h')
+  it('blocks suspend on pinned tab when rule omits pinned=true', () => {
+    const rule = parseRule('suspend inactive>2h')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
@@ -108,31 +108,31 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
-  it('blocks close on slept tab when rule omits slept=true', () => {
-    const rule = parseRule('close inactive>2h')
+  it('blocks archive on suspended tab when rule omits suspended=true', () => {
+    const rule = parseRule('archive inactive>2h')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
     }
-    expect(checkDestructiveSafety(tab({ slept: true }), rule.rule)).toEqual({
+    expect(checkDestructiveSafety(tab({ suspended: true }), rule.rule)).toEqual({
       allowed: false,
-      reason: 'slept',
+      reason: 'suspended',
     })
   })
 
-  it('allows close on slept tab when rule includes slept=true', () => {
-    const rule = parseRule('close inactive>2h slept=true')
+  it('allows archive on suspended tab when rule includes suspended=true', () => {
+    const rule = parseRule('archive inactive>2h suspended=true')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return
     }
-    expect(checkDestructiveSafety(tab({ slept: true }), rule.rule)).toEqual({
+    expect(checkDestructiveSafety(tab({ suspended: true }), rule.rule)).toEqual({
       allowed: true,
     })
   })
 
-  it('allows close on plain inactive background tab', () => {
-    const rule = parseRule('close inactive>2h')
+  it('allows archive on plain inactive background tab', () => {
+    const rule = parseRule('archive inactive>2h')
     expect(rule.ok).toBe(true)
     if (!rule.ok) {
       return

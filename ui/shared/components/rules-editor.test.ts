@@ -6,7 +6,7 @@ const writeSettings = vi.fn().mockResolvedValue(undefined)
 const readSettings = vi.fn().mockResolvedValue({
   engineEnabled: true,
   evaluationIntervalMinutes: 5,
-  graveyardRetentionDays: 90,
+  archiveRetentionDays: 90,
   rules: ['keep pinned=true'],
 })
 
@@ -51,12 +51,12 @@ describe('rules-editor', () => {
     const wrapper = mount(RulesEditor)
     await vi.waitFor(() => expect(wrapper.find('textarea').exists()).toBe(true))
 
-    await wrapper.find('textarea').setValue('keep pinned=true\nclose inactive>2h')
+    await wrapper.find('textarea').setValue('keep pinned=true\narchive inactive>2h')
     await wrapper.findAll('button').find((b) => b.text() === 'save rules')!.trigger('click')
 
     await vi.waitFor(() => expect(writeSettings).toHaveBeenCalled())
     expect(writeSettings.mock.calls[0]!.at(0)).toMatchObject({
-      rules: ['keep pinned=true', 'close inactive>2h'],
+      rules: ['keep pinned=true', 'archive inactive>2h'],
     })
   })
 })

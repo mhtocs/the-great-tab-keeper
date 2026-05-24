@@ -2,13 +2,13 @@ import type { ParsedRule, RuleCondition } from '../rules/types'
 import type { TabMatchContext } from '../rules/matcher'
 import type { LifecycleAction } from '../storage/schema'
 
-export type SafetyBlockReason = 'pinned' | 'audible' | 'active' | 'slept'
+export type SafetyBlockReason = 'pinned' | 'audible' | 'active' | 'suspended'
 
 export type DestructiveSafetyResult =
   | { allowed: true }
   | { allowed: false; reason: SafetyBlockReason }
 
-const DESTRUCTIVE_ACTIONS: LifecycleAction[] = ['close', 'discard', 'sleep']
+const DESTRUCTIVE_ACTIONS: LifecycleAction[] = ['archive', 'discard', 'suspend']
 
 export function isDestructiveAction(action: LifecycleAction): boolean {
   return DESTRUCTIVE_ACTIONS.includes(action)
@@ -16,7 +16,7 @@ export function isDestructiveAction(action: LifecycleAction): boolean {
 
 function ruleDeclares(
   rule: ParsedRule,
-  kind: Extract<RuleCondition['kind'], 'pinned' | 'audible' | 'active' | 'slept'>,
+  kind: Extract<RuleCondition['kind'], 'pinned' | 'audible' | 'active' | 'suspended'>,
   value: boolean,
 ): boolean {
   return rule.conditions.some(
@@ -24,7 +24,7 @@ function ruleDeclares(
   )
 }
 
-// hard stops before close/discard execute. runs after rule resolution.
+// hard stops before archive/discard execute. runs after rule resolution.
 // pinned/audible/active: block unless the winning rule declares that flag true.
 export function checkDestructiveSafety(
   tab: TabMatchContext,
@@ -46,8 +46,8 @@ export function checkDestructiveSafety(
     return { allowed: false, reason: 'active' }
   }
 
-  if (tab.slept && !ruleDeclares(winner, 'slept', true)) {
-    return { allowed: false, reason: 'slept' }
+  if (tab.suspended && !ruleDeclares(winner, 'suspended', true)) {
+    return { allowed: false, reason: 'suspended' }
   }
 
   return { allowed: true }

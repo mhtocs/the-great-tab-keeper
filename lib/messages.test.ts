@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import {
   isRescheduleEvaluationAlarmMessage,
-  isRestoreGraveyardMessage,
-  isRestoreSleptTabMessage,
+  isRestoreArchiveMessage,
+  isRestoreSuspendedTabMessage,
   isRunEvaluationCycleMessage,
 } from './messages'
 
 describe('runtime message guards', () => {
   it('accepts run-evaluation-cycle', () => {
     expect(isRunEvaluationCycleMessage({ type: 'run-evaluation-cycle' })).toBe(true)
-    expect(isRunEvaluationCycleMessage({ type: 'restore-graveyard' })).toBe(false)
+    expect(isRunEvaluationCycleMessage({ type: 'restore-archive' })).toBe(false)
   })
 
-  it('accepts restore-graveyard with entry id', () => {
+  it('accepts restore-archive with entry id', () => {
     expect(
-      isRestoreGraveyardMessage({ type: 'restore-graveyard', entryId: 'abc' }),
+      isRestoreArchiveMessage({ type: 'restore-archive', entryId: 'abc' }),
     ).toBe(true)
-    expect(isRestoreGraveyardMessage({ type: 'restore-graveyard' })).toBe(false)
+    expect(isRestoreArchiveMessage({ type: 'restore-archive' })).toBe(false)
   })
 
   it('accepts reschedule-evaluation-alarm', () => {
@@ -25,8 +25,8 @@ describe('runtime message guards', () => {
     )
   })
 
-  it('accepts restore-slept-tab with tab id', () => {
-    expect(isRestoreSleptTabMessage({ type: 'restore-slept-tab', tabId: 4 })).toBe(true)
-    expect(isRestoreSleptTabMessage({ type: 'restore-slept-tab' })).toBe(false)
+  it('accepts restore-suspended-tab with tab id', () => {
+    expect(isRestoreSuspendedTabMessage({ type: 'restore-suspended-tab', tabId: 4 })).toBe(true)
+    expect(isRestoreSuspendedTabMessage({ type: 'restore-suspended-tab' })).toBe(false)
   })
 })

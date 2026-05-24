@@ -37,7 +37,7 @@ describe('activity tracker', () => {
     expect(inactiveMsForTab({ id: 4 }, cache, now)).toBe(12_000)
   })
 
-  it('uses sleptAt when chrome last access is unknown', () => {
+  it('uses suspendedAt when chrome last access is unknown', () => {
     expect(inactiveMsForTab({ id: 5 }, {}, now, now - 300_000)).toBe(300_000)
   })
 })

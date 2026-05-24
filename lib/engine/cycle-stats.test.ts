@@ -5,7 +5,7 @@ import type { Settings } from '../storage/schema'
 const settings: Settings = {
   engineEnabled: true,
   evaluationIntervalMinutes: 5,
-  graveyardRetentionDays: 90,
+  archiveRetentionDays: 90,
   rules: [],
 }
 
@@ -16,7 +16,7 @@ describe('cycle stats', () => {
     const next = resolveNextRunAtMs({
       settings,
       lastRun: { at: now - 60_000, tabsEvaluated: 10, actionsTaken: 1 },
-      graveyardCount: 3,
+      archiveCount: 3,
       nextAlarmAtMs: now + 120_000,
       nowMs: now,
     })
@@ -28,7 +28,7 @@ describe('cycle stats', () => {
     const next = resolveNextRunAtMs({
       settings,
       lastRun: { at: lastAt, tabsEvaluated: 5, actionsTaken: 0 },
-      graveyardCount: 0,
+      archiveCount: 0,
       nowMs: now,
     })
     expect(next).toBe(lastAt + 5 * 60_000)
@@ -39,7 +39,7 @@ describe('cycle stats', () => {
       resolveNextRunAtMs({
         settings: { ...settings, engineEnabled: false },
         lastRun: null,
-        graveyardCount: 0,
+        archiveCount: 0,
         nowMs: now,
       }),
     ).toBeNull()
@@ -49,15 +49,15 @@ describe('cycle stats', () => {
     const lines = formatDashboardStatLines({
       settings,
       lastRun: { at: now - 120_000, tabsEvaluated: 12, actionsTaken: 2 },
-      graveyardCount: 4,
+      archiveCount: 4,
       nextAlarmAtMs: now + 300_000,
       nowMs: now,
     })
     expect(lines).toEqual([
       'engine on',
-      'graveyard: 4',
+      'archive: 4',
       'next run: in 5m, every 5 min',
-      'last run: 2m ago, 12 evaluated, 2 closed',
+      'last run: 2m ago, 12 evaluated, 2 actions',
     ])
   })
 })

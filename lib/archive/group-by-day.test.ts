@@ -1,24 +1,24 @@
 import { describe, expect, it } from 'vitest'
-import type { GraveyardEntry } from '../storage/schema'
-import { groupGraveyardEntriesByDay } from './group-by-day'
+import type { ArchiveEntry } from '../storage/schema'
+import { groupArchiveEntriesByDay } from './group-by-day'
 
-function entry(closedAt: number, id: string): GraveyardEntry {
+function entry(archivedAt: number, id: string): ArchiveEntry {
   return {
     id,
     url: `https://example.com/${id}`,
     title: id,
-    closedAt,
-    action: 'close',
-    ruleText: 'close inactive>2h',
+    archivedAt,
+    action: 'archive',
+    ruleText: 'archive inactive>2h',
   }
 }
 
-describe('groupGraveyardEntriesByDay', () => {
+describe('groupArchiveEntriesByDay', () => {
   const now = new Date('2026-05-23T15:00:00').getTime()
   const day = 24 * 60 * 60 * 1000
 
   it('groups entries by calendar day newest first', () => {
-    const groups = groupGraveyardEntriesByDay(
+    const groups = groupArchiveEntriesByDay(
       [
         entry(now - 2 * day, 'old'),
         entry(now - 30 * 60_000, 'today-a'),

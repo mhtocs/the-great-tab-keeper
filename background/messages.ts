@@ -1,22 +1,22 @@
 import {
   isRescheduleEvaluationAlarmMessage,
-  isRestoreGraveyardMessage,
-  isRestoreSleptTabMessage,
+  isRestoreArchiveMessage,
+  isRestoreSuspendedTabMessage,
   isRunEvaluationCycleMessage,
   type RescheduleEvaluationAlarmResponse,
-  type RestoreSleptTabResponse,
+  type RestoreSuspendedTabResponse,
   type RunEvaluationCycleResponse,
 } from '../lib/messages'
-import type { restoreFromGraveyard } from './graveyard-restore'
+import type { restoreFromArchive } from './archive-restore'
 import type { rescheduleEvaluationAlarm } from './scheduler'
-import type { restoreSleptTab } from './sleep-tab'
+import type { restoreSuspendedTab } from './suspend-tab'
 
-type RestoreResult = Awaited<ReturnType<typeof restoreFromGraveyard>>
+type RestoreResult = Awaited<ReturnType<typeof restoreFromArchive>>
 
 export type RuntimeMessageDeps = {
   runCycle: () => Promise<unknown>
-  restoreGraveyard: typeof restoreFromGraveyard
-  restoreSleptTab: typeof restoreSleptTab
+  restoreArchive: typeof restoreFromArchive
+  restoreSuspendedTab: typeof restoreSuspendedTab
   rescheduleAlarm: typeof rescheduleEvaluationAlarm
 }
 
@@ -26,7 +26,7 @@ export async function dispatchRuntimeMessage(
 ): Promise<
   | RunEvaluationCycleResponse
   | RestoreResult
-  | RestoreSleptTabResponse
+  | RestoreSuspendedTabResponse
   | RescheduleEvaluationAlarmResponse
   | null
 > {
@@ -35,8 +35,8 @@ export async function dispatchRuntimeMessage(
     return { ok: true }
   }
 
-  if (isRestoreGraveyardMessage(message)) {
-    return deps.restoreGraveyard(message.entryId)
+  if (isRestoreArchiveMessage(message)) {
+    return deps.restoreArchive(message.entryId)
   }
 
   if (isRescheduleEvaluationAlarmMessage(message)) {
@@ -44,8 +44,8 @@ export async function dispatchRuntimeMessage(
     return { ok: true }
   }
 
-  if (isRestoreSleptTabMessage(message)) {
-    return deps.restoreSleptTab(message.tabId)
+  if (isRestoreSuspendedTabMessage(message)) {
+    return deps.restoreSuspendedTab(message.tabId)
   }
 
   return null
@@ -61,7 +61,7 @@ export function registerRuntimeMessageListener(deps: RuntimeMessageDeps): void {
         sendResponse(result)
       })
       .catch((err: unknown) => {
-        if (isRestoreGraveyardMessage(message)) {
+        if (isRestoreArchiveMessage(message)) {
           sendResponse({
             ok: false,
             error: err instanceof Error ? err.message : 'restore failed',
@@ -77,7 +77,7 @@ export function registerRuntimeMessageListener(deps: RuntimeMessageDeps): void {
           sendResponse({ ok: false })
           return
         }
-        if (isRestoreSleptTabMessage(message)) {
+        if (isRestoreSuspendedTabMessage(message)) {
           sendResponse({
             ok: false,
             error: err instanceof Error ? err.message : 'reload failed',
@@ -87,9 +87,9 @@ export function registerRuntimeMessageListener(deps: RuntimeMessageDeps): void {
 
     return (
       isRunEvaluationCycleMessage(message) ||
-      isRestoreGraveyardMessage(message) ||
+      isRestoreArchiveMessage(message) ||
       isRescheduleEvaluationAlarmMessage(message) ||
-      isRestoreSleptTabMessage(message)
+      isRestoreSuspendedTabMessage(message)
     )
   })
 }

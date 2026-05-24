@@ -105,7 +105,7 @@ export async function runEvaluationCycle(
 
 export async function clickDashboardTab(
   page: Page,
-  tab: 'rules' | 'graveyard' | 'logs' | 'settings',
+  tab: 'rules' | 'archive' | 'logs' | 'settings',
 ) {
   await page.getByRole('button', { name: tab, exact: true }).click()
 }

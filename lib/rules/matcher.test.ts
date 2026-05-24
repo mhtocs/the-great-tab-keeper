@@ -8,7 +8,7 @@ function tab(overrides: Partial<TabMatchContext> = {}): TabMatchContext {
     pinned: false,
     audible: false,
     active: false,
-    slept: false,
+    suspended: false,
     inactiveMs: 3 * 3_600_000,
     ...overrides,
   }
@@ -16,14 +16,14 @@ function tab(overrides: Partial<TabMatchContext> = {}): TabMatchContext {
 
 describe('ruleMatches inactive', () => {
   it('matches when tab inactive longer than threshold', () => {
-    const rule = parseRule('close inactive>2h')
+    const rule = parseRule('archive inactive>2h')
     expect(rule.ok && ruleMatches(rule.rule, tab({ inactiveMs: 3 * 3_600_000 }))).toBe(
       true,
     )
   })
 
   it('does not match when tab inactive shorter than threshold', () => {
-    const rule = parseRule('close inactive>2h')
+    const rule = parseRule('archive inactive>2h')
     expect(rule.ok && ruleMatches(rule.rule, tab({ inactiveMs: 3_600_000 }))).toBe(
       false,
     )
@@ -33,7 +33,7 @@ describe('ruleMatches inactive', () => {
 describe('ruleMatches url', () => {
   // ac 16: glob on full url, case-insensitive
   it('matches youtube url pattern', () => {
-    const rule = parseRule('close url=*youtube.com* inactive>1h')
+    const rule = parseRule('archive url=*youtube.com* inactive>1h')
     expect(
       rule.ok &&
         ruleMatches(rule.rule, tab({ url: 'https://music.youtube.com/watch?v=1' })),
@@ -41,7 +41,7 @@ describe('ruleMatches url', () => {
   })
 
   it('does not match unrelated url', () => {
-    const rule = parseRule('close url=*youtube.com* inactive>1h')
+    const rule = parseRule('archive url=*youtube.com* inactive>1h')
     expect(
       rule.ok && ruleMatches(rule.rule, tab({ url: 'https://example.com/' })),
     ).toBe(false)
@@ -49,7 +49,7 @@ describe('ruleMatches url', () => {
 
   // ac 17
   it('matches plain url substring without wildcards', () => {
-    const rule = parseRule('close url=reddit.com/r/cats inactive>1h')
+    const rule = parseRule('archive url=reddit.com/r/cats inactive>1h')
     expect(
       rule.ok &&
         ruleMatches(rule.rule, tab({ url: 'https://www.reddit.com/r/cats/comments/1' })),
@@ -60,7 +60,7 @@ describe('ruleMatches url', () => {
   })
 
   it('matches path glob on full url', () => {
-    const rule = parseRule('close url=*reddit.com/r/* inactive>1h')
+    const rule = parseRule('archive url=*reddit.com/r/* inactive>1h')
     expect(
       rule.ok &&
         ruleMatches(
@@ -71,7 +71,7 @@ describe('ruleMatches url', () => {
   })
 
   it('does not match anchored *.google.com when url has a path', () => {
-    const rule = parseRule('close url=*.google.com inactive>10m')
+    const rule = parseRule('archive url=*.google.com inactive>10m')
     expect(
       rule.ok &&
         ruleMatches(rule.rule, tab({ url: 'https://mail.google.com/mail/u/0/' })),
@@ -79,7 +79,7 @@ describe('ruleMatches url', () => {
   })
 
   it('matches anchored *.google.com when url ends at host', () => {
-    const rule = parseRule('close url=*.google.com inactive>10m')
+    const rule = parseRule('archive url=*.google.com inactive>10m')
     expect(
       rule.ok &&
         ruleMatches(rule.rule, tab({ url: 'https://calendar.google.com' })),
@@ -101,10 +101,10 @@ describe('ruleMatches tab state', () => {
     expect(rule.ok && ruleMatches(rule.rule, tab({ pinned: false }))).toBe(false)
   })
 
-  it('matches slept=true only for slept placeholder tabs', () => {
-    const rule = parseRule('close slept=true inactive>2h')
-    expect(rule.ok && ruleMatches(rule.rule, tab({ slept: true }))).toBe(true)
-    expect(rule.ok && ruleMatches(rule.rule, tab({ slept: false }))).toBe(false)
+  it('matches suspended=true only for suspended placeholder tabs', () => {
+    const rule = parseRule('archive suspended=true inactive>2h')
+    expect(rule.ok && ruleMatches(rule.rule, tab({ suspended: true }))).toBe(true)
+    expect(rule.ok && ruleMatches(rule.rule, tab({ suspended: false }))).toBe(false)
   })
 })
 
@@ -112,12 +112,12 @@ describe('matchRules', () => {
   it('returns all rules that match the tab', () => {
     const rules = [
       parseRule('keep pinned=true'),
-      parseRule('close inactive>2h'),
+      parseRule('archive inactive>2h'),
     ]
       .filter((r) => r.ok)
       .map((r) => r.rule)
 
     const matched = matchRules(rules, tab({ pinned: false, inactiveMs: 9_000_000 }))
-    expect(matched.map((r) => r.source)).toEqual(['close inactive>2h'])
+    expect(matched.map((r) => r.source)).toEqual(['archive inactive>2h'])
   })
 })

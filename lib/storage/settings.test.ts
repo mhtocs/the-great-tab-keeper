@@ -15,15 +15,15 @@ describe('parseSettings', () => {
     const result = parseSettings({
       engineEnabled: false,
       evaluationIntervalMinutes: 15,
-      graveyardRetentionDays: 30,
-      rules: ['close inactive>2h', ''],
+      archiveRetentionDays: 30,
+      rules: ['archive inactive>2h', ''],
     })
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.settings.engineEnabled).toBe(false)
       expect(result.settings.evaluationIntervalMinutes).toBe(15)
-      expect(result.settings.graveyardRetentionDays).toBe(30)
-      expect(result.settings.rules).toEqual(['close inactive>2h'])
+      expect(result.settings.archiveRetentionDays).toBe(30)
+      expect(result.settings.rules).toEqual(['archive inactive>2h'])
     }
   })
 
@@ -31,7 +31,7 @@ describe('parseSettings', () => {
     const result = parseSettings({
       engineEnabled: true,
       evaluationIntervalMinutes: 10,
-      graveyardRetentionDays: 90,
+      archiveRetentionDays: 90,
       rules: [],
     })
     expect(result).toEqual({
@@ -40,12 +40,12 @@ describe('parseSettings', () => {
     })
   })
 
-  it('rejects graveyard retention below 10 days', () => {
-    for (const graveyardRetentionDays of [0, 5, 9]) {
+  it('rejects archive retention below 10 days', () => {
+    for (const archiveRetentionDays of [0, 5, 9]) {
       const result = parseSettings({
         engineEnabled: true,
         evaluationIntervalMinutes: 5,
-        graveyardRetentionDays,
+        archiveRetentionDays,
         rules: [],
       })
       expect(result.ok).toBe(false)

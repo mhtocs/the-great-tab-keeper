@@ -1,4 +1,4 @@
-export function graveyardFaviconSrc(entry: {
+export function archiveFaviconSrc(entry: {
   url: string
   favicon?: string
 }): string | undefined {

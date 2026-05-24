@@ -7,14 +7,37 @@ import {
   type RuleCondition,
 } from './types'
 
-const ACTIONS: readonly LifecycleAction[] = ['keep', 'close', 'discard', 'sleep']
+const ACTIONS: readonly LifecycleAction[] = ['keep', 'archive', 'discard', 'suspend']
+
+const LEGACY_ACTION_ALIASES: Record<string, LifecycleAction> = {
+  close: 'archive',
+  sleep: 'suspend',
+}
+
+export function migrateRuleLine(line: string): string {
+  const trimmed = line.trim()
+  if (trimmed.length === 0) {
+    return trimmed
+  }
+  const tokens = trimmed.split(/\s+/)
+  const action = tokens[0]!.toLowerCase()
+  if (action in LEGACY_ACTION_ALIASES) {
+    tokens[0] = LEGACY_ACTION_ALIASES[action]!
+  }
+  for (let i = 1; i < tokens.length; i++) {
+    if (tokens[i]!.toLowerCase().startsWith('slept=')) {
+      tokens[i] = tokens[i]!.replace(/^slept=/i, 'suspended=')
+    }
+  }
+  return tokens.join(' ')
+}
 
 const INACTIVE_RE = /^inactive>(\d+)(m|h|d)$/i
-const BOOLEAN_CONDITION_RE = /^(pinned|audible|active|slept)=(true|false)$/i
+const BOOLEAN_CONDITION_RE = /^(pinned|audible|active|suspended)=(true|false)$/i
 const URL_RE = /^url=(.+)$/i
 
 export function parseRule(line: string): ParseRuleResult {
-  const source = line.trim()
+  const source = migrateRuleLine(line)
   if (source.length === 0) {
     return { ok: false, error: 'rule cannot be empty', source: line }
   }
@@ -25,7 +48,7 @@ export function parseRule(line: string): ParseRuleResult {
   if (!actionToken || !isLifecycleAction(actionToken)) {
     return {
       ok: false,
-      error: `unknown action "${tokens[0] ?? ''}", use keep, close, or discard`,
+      error: `unknown action "${tokens[0] ?? ''}", use keep, archive, discard, or suspend`,
       source,
     }
   }
@@ -142,7 +165,7 @@ function parseConditionToken(
       | 'pinned'
       | 'audible'
       | 'active'
-      | 'slept'
+      | 'suspended'
     const value = booleanMatch[2] === 'true'
     return { ok: true, condition: { kind, value } }
   }

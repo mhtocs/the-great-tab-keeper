@@ -1,6 +1,6 @@
 import { formatDashboardStatLines } from '@/lib/engine/cycle-stats'
 import { EVALUATION_ALARM_NAME } from '@/lib/engine/scheduler'
-import { readGraveyard, readLastRun, readSettings } from '@/lib/storage/chrome-storage'
+import { readArchive, readLastRun, readSettings } from '@/lib/storage/chrome-storage'
 import { useLocalStorageKeys } from './use-local-storage'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
@@ -20,7 +20,7 @@ export function useCycleStats() {
   const nowMs = ref(Date.now())
   const settings = ref<Awaited<ReturnType<typeof readSettings>> | null>(null)
   const lastRun = ref<Awaited<ReturnType<typeof readLastRun>>>(null)
-  const graveyardCount = ref(0)
+  const archiveCount = ref(0)
   const nextAlarmAtMs = ref<number | undefined>(undefined)
   const loading = ref(true)
 
@@ -31,7 +31,7 @@ export function useCycleStats() {
     return formatDashboardStatLines({
       settings: settings.value,
       lastRun: lastRun.value,
-      graveyardCount: graveyardCount.value,
+      archiveCount: archiveCount.value,
       nextAlarmAtMs: nextAlarmAtMs.value,
       nowMs: nowMs.value,
     })
@@ -39,13 +39,13 @@ export function useCycleStats() {
 
   async function load() {
     loading.value = true
-    const [graveyard, storedSettings, storedLastRun, alarmAt] = await Promise.all([
-      readGraveyard(),
+    const [archive, storedSettings, storedLastRun, alarmAt] = await Promise.all([
+      readArchive(),
       readSettings(),
       readLastRun(),
       readNextAlarmAtMs(),
     ])
-    graveyardCount.value = graveyard.length
+    archiveCount.value = archive.length
     settings.value = storedSettings
     lastRun.value = storedLastRun
     nextAlarmAtMs.value = alarmAt
@@ -67,7 +67,7 @@ export function useCycleStats() {
     }
   })
 
-  useLocalStorageKeys(['graveyard', 'settings', 'lastRun'], load)
+  useLocalStorageKeys(['archive', 'archive', 'settings', 'lastRun'], load)
 
   return { statLines, loading }
 }

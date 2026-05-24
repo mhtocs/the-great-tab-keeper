@@ -6,10 +6,10 @@ const { logText, isEmpty, loading } = useDevLog()
 </script>
 
 <template>
-  <section class="space-y-3 px-6 pb-6 pt-4">
-    <p class="text-xs text-gray-500">dev log (max {{ DEV_LOG_MAX_ENTRIES }} lines)</p>
+  <section class="min-h-[28rem] space-y-3 px-6 pb-6 pt-4">
+    <p class="text-xs text-gray-500">dev log (max {{ DEV_LOG_MAX_ENTRIES }}, oldest first)</p>
 
-    <div v-if="loading" class="font-mono text-xs text-gray-500">loading…</div>
+    <div v-if="loading" class="text-xs text-gray-500">loading…</div>
 
     <template v-else>
       <pre

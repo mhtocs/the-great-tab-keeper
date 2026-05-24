@@ -1,3 +1,4 @@
+import { isTransientTabEditError } from '../lib/engine/tab-edit-errors'
 import { EXTENSION_LOG_PREFIX } from '../lib/product-name'
 import { formatCycleResultMessage } from '../lib/logs/dev-log'
 import type { EvaluationCycleResult } from '../lib/engine/evaluation-cycle'
@@ -5,14 +6,14 @@ import { runEvaluationCycle } from '../lib/engine/evaluation-cycle'
 import {
   appendDevLog,
   readActivityCache,
-  readGraveyard,
+  readArchive,
   readSettings,
-  writeGraveyard,
+  writeArchive,
   writeLastRun,
 } from '../lib/storage/chrome-storage'
 import { queryActiveTabId, queryAllTabs, removeTabById } from './chrome-tabs'
-import { readSleptTabs } from '../lib/storage/chrome-session'
-import { sleepTabById } from './sleep-tab'
+import { readSuspendedTabs } from '../lib/storage/chrome-session'
+import { suspendTabById } from './suspend-tab'
 import { whenExtensionReady } from './setup'
 
 let cycleTail: Promise<EvaluationCycleResult | void> = Promise.resolve()
@@ -25,16 +26,19 @@ export function runTabYardEvaluationCycle(): Promise<EvaluationCycleResult> {
       queryTabs: queryAllTabs,
       getActiveTabId: queryActiveTabId,
       readActivityCache,
-      readSleptTabs,
-      readGraveyard,
-      writeGraveyard,
+      readSuspendedTabs,
+      readArchive,
+      writeArchive,
       writeLastRun,
       removeTab: removeTabById,
-      sleepTab: sleepTabById,
+      suspendTab: suspendTabById,
       async onActionMessage(message) {
         await appendDevLog(message)
       },
       onTabError(tabId, error) {
+        if (isTransientTabEditError(error)) {
+          return
+        }
         console.error(`${EXTENSION_LOG_PREFIX} cycle tab error`, tabId, error)
       },
     })

@@ -8,14 +8,14 @@ function baseSettings(overrides: Partial<Settings> = {}): Settings {
   return {
     engineEnabled: true,
     evaluationIntervalMinutes: 5,
-    graveyardRetentionDays: 90,
-    rules: ['close inactive>2h'],
+    archiveRetentionDays: 90,
+    rules: ['archive inactive>2h'],
     ...overrides,
   }
 }
 
 function ports(overrides: Partial<EvaluationCyclePorts> = {}): EvaluationCyclePorts {
-  const graveyard: import('../storage/schema').GraveyardEntry[] = []
+  const archive: import('../storage/schema').ArchiveEntry[] = []
 
   return {
     readSettings: async () => baseSettings(),
@@ -31,15 +31,15 @@ function ports(overrides: Partial<EvaluationCyclePorts> = {}): EvaluationCyclePo
     ],
     getActiveTabId: async () => undefined,
     readActivityCache: async () => ({}),
-    readSleptTabs: async () => ({}),
-    readGraveyard: async () => graveyard,
-    writeGraveyard: async (entries) => {
-      graveyard.length = 0
-      graveyard.push(...entries)
+    readSuspendedTabs: async () => ({}),
+    readArchive: async () => archive,
+    writeArchive: async (entries) => {
+      archive.length = 0
+      archive.push(...entries)
     },
     writeLastRun: async () => {},
     removeTab: vi.fn().mockResolvedValue(undefined),
-    sleepTab: vi.fn().mockResolvedValue(true),
+    suspendTab: vi.fn().mockResolvedValue(true),
     ...overrides,
   }
 }
@@ -58,14 +58,14 @@ describe('runEvaluationCycle', () => {
       skipReason: 'engine_off',
       tabsEvaluated: 0,
       actionsTaken: 0,
-      tabsClosed: 0,
+      tabsArchived: 0,
       tabsRemoved: 0,
-      tabsSlept: 0,
+      tabsSuspended: 0,
     })
     expect(removeTab).not.toHaveBeenCalled()
   })
 
-  it('closes inactive tab and writes graveyard', async () => {
+  it('archives inactive tab and writes archive', async () => {
     const removeTab = vi.fn().mockResolvedValue(undefined)
     const p = ports({ removeTab })
     const result = await runEvaluationCycle(p)
@@ -73,15 +73,15 @@ describe('runEvaluationCycle', () => {
     expect(result.skipped).toBe(false)
     expect(result.tabsEvaluated).toBe(1)
     expect(result.actionsTaken).toBe(1)
-    expect(result.tabsClosed).toBe(1)
+    expect(result.tabsArchived).toBe(1)
     expect(removeTab).toHaveBeenCalledWith(1)
 
-    const graveyard = await p.readGraveyard()
-    expect(graveyard).toHaveLength(1)
-    expect(graveyard[0]!.url).toBe('https://example.com/page')
+    const archive = await p.readArchive()
+    expect(archive).toHaveLength(1)
+    expect(archive[0]!.url).toBe('https://example.com/page')
   })
 
-  it('discards without graveyard entry', async () => {
+  it('discards without archive entry', async () => {
     const removeTab = vi.fn().mockResolvedValue(undefined)
     const p = ports({
       readSettings: async () => baseSettings({ rules: ['discard inactive>2h'] }),
@@ -91,45 +91,45 @@ describe('runEvaluationCycle', () => {
 
     expect(result.actionsTaken).toBe(1)
     expect(result.tabsRemoved).toBe(1)
-    expect(await p.readGraveyard()).toHaveLength(0)
+    expect(await p.readArchive()).toHaveLength(0)
   })
 
-  it('sleeps tab via sleep adapter without graveyard', async () => {
-    const sleepTab = vi.fn().mockResolvedValue(true)
+  it('suspends tab via suspend adapter without archive', async () => {
+    const suspendTab = vi.fn().mockResolvedValue(true)
     const removeTab = vi.fn()
     const onActionMessage = vi.fn()
     const p = ports({
-      readSettings: async () => baseSettings({ rules: ['sleep inactive>2h'] }),
-      sleepTab,
+      readSettings: async () => baseSettings({ rules: ['suspend inactive>2h'] }),
+      suspendTab,
       removeTab,
       onActionMessage,
     })
     const result = await runEvaluationCycle(p)
 
     expect(result.actionsTaken).toBe(1)
-    expect(result.tabsSlept).toBe(1)
-    expect(sleepTab).toHaveBeenCalledWith({
+    expect(result.tabsSuspended).toBe(1)
+    expect(suspendTab).toHaveBeenCalledWith({
       tabId: 1,
       url: 'https://example.com/page',
       title: 'example',
       favicon: undefined,
     })
     expect(removeTab).not.toHaveBeenCalled()
-    expect(await p.readGraveyard()).toHaveLength(0)
-    expect(onActionMessage).toHaveBeenCalledWith('slept, example')
+    expect(await p.readArchive()).toHaveLength(0)
+    expect(onActionMessage).toHaveBeenCalledWith('suspended, example')
   })
 
-  it('does not count sleep when sleep adapter returns false', async () => {
-    const sleepTab = vi.fn().mockResolvedValue(false)
+  it('does not count suspend when suspend adapter returns false', async () => {
+    const suspendTab = vi.fn().mockResolvedValue(false)
     const result = await runEvaluationCycle(
       ports({
-        readSettings: async () => baseSettings({ rules: ['sleep inactive>2h'] }),
-        sleepTab,
+        readSettings: async () => baseSettings({ rules: ['suspend inactive>2h'] }),
+        suspendTab,
       }),
     )
 
     expect(result.actionsTaken).toBe(0)
-    expect(result.tabsSlept).toBe(0)
+    expect(result.tabsSuspended).toBe(0)
   })
 
   it('continues cycle when one tab throws', async () => {
@@ -152,7 +152,7 @@ describe('runEvaluationCycle', () => {
     expect(onTabError).not.toHaveBeenCalled()
   })
 
-  it('does not close slept tab without slept=true condition', async () => {
+  it('does not archive suspended tab without suspended=true condition', async () => {
     const removeTab = vi.fn().mockResolvedValue(undefined)
     const result = await runEvaluationCycle(
       ports({
@@ -160,8 +160,8 @@ describe('runEvaluationCycle', () => {
         queryTabs: async () => [
           {
             id: 7,
-            url: 'chrome-extension://id/ui/slept/index.html?tabId=7',
-            title: 'slept tab',
+            url: 'chrome-extension://id/ui/suspended/index.html?tabId=7',
+            title: 'suspended tab',
             lastAccessed: Date.now() - THREE_HOURS_MS,
           },
         ],
@@ -172,62 +172,62 @@ describe('runEvaluationCycle', () => {
     expect(removeTab).not.toHaveBeenCalled()
   })
 
-  it('closes slept tab when rule requires slept=true', async () => {
+  it('archives suspended tab when rule requires suspended=true', async () => {
     const removeTab = vi.fn().mockResolvedValue(undefined)
     const now = Date.now()
     const p = ports({
       readSettings: async () =>
-        baseSettings({ rules: ['close slept=true inactive>2h'] }),
+        baseSettings({ rules: ['archive suspended=true inactive>2h'] }),
       removeTab,
-      readSleptTabs: async () => ({
+      readSuspendedTabs: async () => ({
         '8': {
           url: 'https://example.com/original',
           title: 'original title',
-          sleptAt: now - THREE_HOURS_MS,
+          suspendedAt: now - THREE_HOURS_MS,
         },
       }),
       queryTabs: async () => [
         {
           id: 8,
-          url: 'chrome-extension://id/ui/slept/index.html?tabId=8',
-          title: 'slept tab',
+          url: 'chrome-extension://id/ui/suspended/index.html?tabId=8',
+          title: 'suspended tab',
         },
       ],
     })
     const result = await runEvaluationCycle(p, now)
     expect(result.tabsEvaluated).toBe(1)
     expect(result.actionsTaken).toBe(1)
-    expect(result.tabsClosed).toBe(1)
+    expect(result.tabsArchived).toBe(1)
     expect(removeTab).toHaveBeenCalledWith(8)
 
-    const graveyard = await p.readGraveyard()
-    expect(graveyard[0]?.url).toBe('https://example.com/original')
+    const archive = await p.readArchive()
+    expect(archive[0]?.url).toBe('https://example.com/original')
   })
 
-  it('closes old slept tab without chrome lastAccessed using sleptAt', async () => {
+  it('archives old suspended tab without chrome lastAccessed using suspendedAt', async () => {
     const removeTab = vi.fn().mockResolvedValue(undefined)
     const now = Date.now()
     const p = ports({
       readSettings: async () =>
-        baseSettings({ rules: ['close slept=true inactive>2m'] }),
+        baseSettings({ rules: ['archive suspended=true inactive>2m'] }),
       removeTab,
-      readSleptTabs: async () => ({
+      readSuspendedTabs: async () => ({
         '8': {
           url: 'https://example.com/old',
           title: 'old',
-          sleptAt: now - THREE_HOURS_MS,
+          suspendedAt: now - THREE_HOURS_MS,
         },
       }),
       queryTabs: async () => [
         {
           id: 8,
-          url: 'chrome-extension://idekaaaflogbdjllgdfhpiamkhfofenh/ui/slept/index.html?tabId=8',
-          title: 'slept',
+          url: 'chrome-extension://idekaaaflogbdjllgdfhpiamkhfofenh/ui/suspended/index.html?tabId=8',
+          title: 'suspended',
         },
       ],
     })
     const result = await runEvaluationCycle(p, now)
-    expect(result.tabsClosed).toBe(1)
+    expect(result.tabsArchived).toBe(1)
     expect(removeTab).toHaveBeenCalledWith(8)
   })
 })

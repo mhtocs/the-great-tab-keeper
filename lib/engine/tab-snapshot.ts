@@ -1,6 +1,6 @@
 import { inactiveMsForTab, lastAccessedMs } from '../activity/tracker'
 import type { ActivityCache } from '../storage/schema'
-import { isSleptPageUrl } from '../slept/slept-page'
+import { isSuspendedPageUrl } from '../suspended/suspended-page'
 import type { TabEvaluationInput } from './evaluator'
 
 export type ChromeTabSnapshot = {
@@ -19,7 +19,7 @@ export function toTabEvaluationInput(
   activeTabId: number | undefined,
   cache: ActivityCache,
   nowMs: number,
-  sleptAtMs?: number,
+  suspendedAtMs?: number,
 ): TabEvaluationInput | null {
   if (tab.id === undefined || !tab.url) {
     return null
@@ -32,9 +32,9 @@ export function toTabEvaluationInput(
     pinned: tab.pinned ?? false,
     audible: tab.audible ?? false,
     active: tab.id === activeTabId,
-    slept: isSleptPageUrl(tab.url),
+    suspended: isSuspendedPageUrl(tab.url),
     discarded: tab.discarded ?? false,
-    inactiveMs: inactiveMsForTab(tab, cache, nowMs, sleptAtMs),
+    inactiveMs: inactiveMsForTab(tab, cache, nowMs, suspendedAtMs),
     lastAccessedMs: lastAccessedMs(tab, cache, nowMs),
   }
 }

@@ -11,7 +11,7 @@ function evaluationDueAtMs(
 export type CycleStatsInput = {
   settings: Settings
   lastRun: LastRunSummary | null
-  graveyardCount: number
+  archiveCount: number
   nextAlarmAtMs?: number
   nowMs?: number
 }
@@ -42,7 +42,7 @@ export function formatDashboardStatLines(input: CycleStatsInput): string[] {
   const lines: string[] = []
 
   lines.push(`engine ${input.settings.engineEnabled ? 'on' : 'off'}`)
-  lines.push(`graveyard: ${input.graveyardCount}`)
+  lines.push(`archive: ${input.archiveCount}`)
 
   if (!input.settings.engineEnabled) {
     lines.push('next run: engine off')
@@ -59,7 +59,7 @@ export function formatDashboardStatLines(input: CycleStatsInput): string[] {
     lines.push(
       `last run: ${formatTimeAgo(input.lastRun.at, now)}, ` +
         `${input.lastRun.tabsEvaluated} evaluated, ` +
-        `${input.lastRun.actionsTaken} closed`,
+        `${input.lastRun.actionsTaken} actions`,
     )
   }
 

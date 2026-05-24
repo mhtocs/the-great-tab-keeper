@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_RULES } from '../defaults/rules'
-import { inactiveDurationMs, parseRule, parseRules } from './parser'
+import { inactiveDurationMs, migrateRuleLine, parseRule, parseRules } from './parser'
 
 describe('parseRule', () => {
-  it('parses close with inactive duration', () => {
-    const result = parseRule('close inactive>2h')
+  it('parses archive with inactive duration', () => {
+    const result = parseRule('archive inactive>2h')
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.rule.action).toBe('close')
+      expect(result.rule.action).toBe('archive')
       expect(result.rule.conditions).toEqual([
         { kind: 'inactive', value: 2, unit: 'h' },
       ])
@@ -25,11 +25,11 @@ describe('parseRule', () => {
     }
   })
 
-  it('parses sleep with inactive duration', () => {
-    const result = parseRule('sleep inactive>2h')
+  it('parses suspend with inactive duration', () => {
+    const result = parseRule('suspend inactive>2h')
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.rule.action).toBe('sleep')
+      expect(result.rule.action).toBe('suspend')
       expect(result.rule.conditions).toEqual([
         { kind: 'inactive', value: 2, unit: 'h' },
       ])
@@ -45,9 +45,9 @@ describe('parseRule', () => {
     }
   })
 
-  it('parses pinned audible active and slept booleans', () => {
+  it('parses pinned audible active and suspended booleans', () => {
     const result = parseRule(
-      'close inactive>30d pinned=false audible=true active=false slept=true',
+      'archive inactive>30d pinned=false audible=true active=false suspended=true',
     )
     expect(result.ok).toBe(true)
     if (result.ok) {
@@ -64,14 +64,14 @@ describe('parseRule', () => {
         value: false,
       })
       expect(result.rule.conditions).toContainEqual({
-        kind: 'slept',
+        kind: 'suspended',
         value: true,
       })
     }
   })
 
   it('parses url condition with wildcards', () => {
-    const result = parseRule('close url=*reddit.com/r/* inactive>1h')
+    const result = parseRule('archive url=*reddit.com/r/* inactive>1h')
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.rule.conditions[0]).toEqual({
@@ -82,7 +82,7 @@ describe('parseRule', () => {
   })
 
   it('rejects unknown action', () => {
-    const result = parseRule('archive inactive>1d')
+    const result = parseRule('destroy inactive>1d')
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.error).toContain('unknown action')
@@ -90,7 +90,7 @@ describe('parseRule', () => {
   })
 
   it('rejects invalid inactive unit', () => {
-    const result = parseRule('close inactive>2w')
+    const result = parseRule('archive inactive>2w')
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.error).toContain('unrecognized condition')
@@ -111,7 +111,7 @@ describe('parseRules', () => {
     const result = parseRules([
       'keep pinned=true',
       '',
-      'close inactive>2h',
+      'archive inactive>2h',
     ])
     expect(result.ok).toBe(true)
     if (result.ok) {
@@ -120,11 +120,20 @@ describe('parseRules', () => {
   })
 
   it('returns index when a line fails', () => {
-    const result = parseRules(['close inactive>2h', 'bad-rule'])
+    const result = parseRules(['archive inactive>2h', 'bad-rule'])
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.index).toBe(1)
     }
+  })
+})
+
+describe('migrateRuleLine', () => {
+  it('maps legacy close and slept conditions to archive and suspended', () => {
+    expect(migrateRuleLine('close inactive>2h')).toBe('archive inactive>2h')
+    expect(migrateRuleLine('sleep inactive>1h slept=true')).toBe(
+      'suspend inactive>1h suspended=true',
+    )
   })
 })
 

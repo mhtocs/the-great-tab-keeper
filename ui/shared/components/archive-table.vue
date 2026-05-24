@@ -1,25 +1,34 @@
 <script setup lang="ts">
-import { graveyardFaviconSrc } from '@/lib/graveyard/favicon-url'
-import type { GraveyardEntry } from '@/lib/storage/schema'
+import { archiveFaviconSrc } from '@/lib/archive/favicon-url'
+import type { ArchiveEntry } from '@/lib/storage/schema'
 import { ref } from 'vue'
-import { useGraveyard } from '../composables/use-graveyard'
+import { useArchive } from '../composables/use-archive'
 
-const { groupedEntries, hintLine, loading, restoreError, restoreEntry } = useGraveyard()
+const {
+  groupedEntries,
+  hintLine,
+  loading,
+  restoreError,
+  restoreEntry,
+  page,
+  totalPages,
+  goToPage,
+} = useArchive()
 
 const brokenFavicons = ref(new Set<string>())
 
-function formatTime(closedAt: number): string {
-  return new Date(closedAt).toLocaleTimeString(undefined, {
+function formatTime(archivedAt: number): string {
+  return new Date(archivedAt).toLocaleTimeString(undefined, {
     hour: 'numeric',
     minute: '2-digit',
   })
 }
 
-function faviconFor(entry: GraveyardEntry): string | undefined {
+function faviconFor(entry: ArchiveEntry): string | undefined {
   if (brokenFavicons.value.has(entry.id)) {
     return undefined
   }
-  return graveyardFaviconSrc(entry)
+  return archiveFaviconSrc(entry)
 }
 
 function onFaviconError(entryId: string) {
@@ -94,7 +103,7 @@ function onFaviconError(entryId: string) {
                   </button>
                 </td>
                 <td class="py-2 pr-4 whitespace-nowrap">
-                  {{ formatTime(entry.closedAt) }}
+                  {{ formatTime(entry.archivedAt) }}
                 </td>
                 <td class="overflow-hidden py-2 pl-4 font-mono whitespace-nowrap">
                   <span class="block truncate" :title="entry.ruleText">{{
@@ -105,6 +114,29 @@ function onFaviconError(entryId: string) {
             </template>
           </tbody>
         </table>
+      </div>
+
+      <div
+        v-if="totalPages > 1"
+        class="mt-4 flex shrink-0 items-center justify-between border-t border-gray-200 pt-3 text-xs text-gray-500"
+      >
+        <button
+          type="button"
+          class="cursor-pointer rounded border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          :disabled="page <= 1"
+          @click="goToPage(page - 1)"
+        >
+          previous
+        </button>
+        <span>page {{ page }} of {{ totalPages }}</span>
+        <button
+          type="button"
+          class="cursor-pointer rounded border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          :disabled="page >= totalPages"
+          @click="goToPage(page + 1)"
+        >
+          next
+        </button>
       </div>
     </template>
   </section>

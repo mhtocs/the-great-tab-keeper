@@ -1,19 +1,19 @@
 // runtime messages between dashboard ui and mv3 background
 
 export type RunEvaluationCycleMessage = { type: 'run-evaluation-cycle' }
-export type RestoreGraveyardMessage = { type: 'restore-graveyard'; entryId: string }
+export type RestoreArchiveMessage = { type: 'restore-archive'; entryId: string }
 export type RescheduleEvaluationAlarmMessage = { type: 'reschedule-evaluation-alarm' }
-export type RestoreSleptTabMessage = { type: 'restore-slept-tab'; tabId: number }
+export type RestoreSuspendedTabMessage = { type: 'restore-suspended-tab'; tabId: number }
 
 export type RuntimeMessage =
   | RunEvaluationCycleMessage
-  | RestoreGraveyardMessage
+  | RestoreArchiveMessage
   | RescheduleEvaluationAlarmMessage
-  | RestoreSleptTabMessage
+  | RestoreSuspendedTabMessage
 
 export type RunEvaluationCycleResponse = { ok: boolean }
 export type RescheduleEvaluationAlarmResponse = { ok: boolean }
-export type RestoreSleptTabResponse = { ok: boolean; error?: string }
+export type RestoreSuspendedTabResponse = { ok: boolean; error?: string }
 
 export function isRunEvaluationCycleMessage(
   message: unknown,
@@ -25,14 +25,16 @@ export function isRunEvaluationCycleMessage(
   )
 }
 
-export function isRestoreGraveyardMessage(
+export function isRestoreArchiveMessage(
   message: unknown,
-): message is RestoreGraveyardMessage {
+): message is RestoreArchiveMessage {
+  if (typeof message !== 'object' || message === null) {
+    return false
+  }
+  const type = (message as RestoreArchiveMessage).type
   return (
-    typeof message === 'object' &&
-    message !== null &&
-    (message as RestoreGraveyardMessage).type === 'restore-graveyard' &&
-    typeof (message as RestoreGraveyardMessage).entryId === 'string'
+    (type === 'restore-archive' || type === 'restore-archive') &&
+    typeof (message as RestoreArchiveMessage).entryId === 'string'
   )
 }
 
@@ -46,13 +48,15 @@ export function isRescheduleEvaluationAlarmMessage(
   )
 }
 
-export function isRestoreSleptTabMessage(
+export function isRestoreSuspendedTabMessage(
   message: unknown,
-): message is RestoreSleptTabMessage {
+): message is RestoreSuspendedTabMessage {
+  if (typeof message !== 'object' || message === null) {
+    return false
+  }
+  const type = (message as RestoreSuspendedTabMessage).type
   return (
-    typeof message === 'object' &&
-    message !== null &&
-    (message as RestoreSleptTabMessage).type === 'restore-slept-tab' &&
-    typeof (message as RestoreSleptTabMessage).tabId === 'number'
+    (type === 'restore-suspended-tab' || type === 'restore-suspended-tab') &&
+    typeof (message as RestoreSuspendedTabMessage).tabId === 'number'
   )
 }
