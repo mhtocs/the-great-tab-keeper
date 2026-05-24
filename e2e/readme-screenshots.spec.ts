@@ -7,6 +7,7 @@ import type { DevLogEntry, GraveyardEntry } from '../lib/storage/schema'
 import {
   clickDashboardTab,
   expect,
+  getExtensionServiceWorker,
   openDashboard,
   storageClear,
   storageSet,
@@ -18,14 +19,22 @@ const outDir = path.resolve(
   '../docs/screenshots',
 )
 
-// keep / close / discard + url / inactive — copied from lib + e2e tests
+// keep / close / discard / sleep + url / inactive — copied from lib + e2e tests
 const readmeRules = [
   'keep pinned=true', // seed.test, action-handlers.test
   'keep url=docs.google.com', // evaluator.test
   'close inactive>2h', // evaluator.test, extension.spec
   'close inactive>10m url=docs.google.com', // evaluator.test
   'discard inactive>7d', // action-handlers.test
+  'sleep inactive>2h url=journalclub.io',
 ] as const
+
+const readmeSleptTabId = 9001
+const readmeSleptEntry = {
+  url: 'https://journalclub.io/episodes',
+  title: 'The Episode Archive',
+  sleptAt: Date.now(),
+}
 
 test.describe.configure({ mode: 'serial' })
 
@@ -33,7 +42,7 @@ test.beforeAll(() => {
   fs.mkdirSync(outDir, { recursive: true })
 })
 
-test('capture readme screenshots', async ({ context, dashboardUrl }) => {
+test('capture readme screenshots', async ({ context, dashboardUrl, extensionId }) => {
   const now = Date.now()
   const hour = 60 * 60 * 1000
 
@@ -65,10 +74,15 @@ test('capture readme screenshots', async ({ context, dashboardUrl }) => {
   ]
 
   const devLog: DevLogEntry[] = [
-    { id: 'log-1', at: now - 3 * 60 * 1000, message: 'cycle finished · 24 tabs · 3 closed' },
+    {
+      id: 'log-1',
+      at: now - 3 * 60 * 1000,
+      message: 'cycle finished · 24 evaluated · 3 closed, 1 slept',
+    },
     { id: 'log-2', at: now - 28 * 60 * 1000, message: 'closed · Array.prototype.map() - JavaScript | MDN' },
-    { id: 'log-3', at: now - 2 * hour, message: 'closed · Pull requests' },
-    { id: 'log-4', at: now - 4 * hour, message: 'alarm fired' },
+    { id: 'log-3', at: now - 2 * hour, message: 'slept · The Episode Archive' },
+    { id: 'log-4', at: now - 2 * hour, message: 'closed · Pull requests' },
+    { id: 'log-5', at: now - 4 * hour, message: 'alarm fired' },
   ]
 
   await storageClear(context)
@@ -76,9 +90,19 @@ test('capture readme screenshots', async ({ context, dashboardUrl }) => {
     settings: { ...initialSettings(), rules: [...readmeRules] },
     graveyard,
     devLog,
-    lastRun: { at: now - 3 * 60 * 1000, tabsEvaluated: 24, actionsTaken: 3 },
+    lastRun: { at: now - 3 * 60 * 1000, tabsEvaluated: 24, actionsTaken: 4 },
     activityCache: {},
   })
+
+  const serviceWorker = await getExtensionServiceWorker(context)
+  await serviceWorker.evaluate(
+    async (payload) => {
+      await chrome.storage.session.set({
+        sleptTabs: { [String(payload.tabId)]: payload.entry },
+      })
+    },
+    { tabId: readmeSleptTabId, entry: { ...readmeSleptEntry, sleptAt: now - 2 * hour } },
+  )
 
   const page = await openDashboard(context, dashboardUrl)
   await page.setViewportSize({ width: 1100, height: 820 })
@@ -105,4 +129,14 @@ test('capture readme screenshots', async ({ context, dashboardUrl }) => {
   await page.screenshot({ path: path.join(outDir, 'settings.png') })
 
   await page.close()
+
+  const sleptUrl = `chrome-extension://${extensionId}/ui/slept/index.html?tabId=${readmeSleptTabId}`
+  const sleptPage = await context.newPage()
+  await sleptPage.setViewportSize({ width: 1100, height: 820 })
+  await sleptPage.goto(sleptUrl)
+  await sleptPage.getByText('slept by tabcleaner').waitFor()
+  await expect(sleptPage.getByText('The Episode Archive')).toBeVisible()
+  await expect(sleptPage.getByText('https://journalclub.io/episodes')).toBeVisible()
+  await sleptPage.screenshot({ path: path.join(outDir, 'sleep.png') })
+  await sleptPage.close()
 })

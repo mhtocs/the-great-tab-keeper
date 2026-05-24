@@ -5,11 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>slept · tabcleaner</title>
   </head>
-  <body>
+  <body class="min-h-screen bg-gray-50">
     <main
-      class="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 p-6"
+      class="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center gap-5 p-6 text-center"
     >
-      <p class="text-sm text-gray-600">slept by tabcleaner</p>
+      <p class="text-sm text-gray-500">slept by tabcleaner</p>
+
+      <div class="w-full space-y-2">
+        <p id="title" class="text-base font-medium text-gray-900"></p>
+        <p
+          id="url"
+          class="break-all font-mono text-xs leading-relaxed text-gray-600"
+        ></p>
+      </div>
+
       <button
         type="button"
         id="reload"

@@ -10,9 +10,15 @@ captured from the built extension in headed chromium (`npm run screenshots:readm
 
 ### rules
 
-editor with sample rules from tests: `keep`, `close`, `discard`, plus `url=` and `inactive>`. one rule per line; engine toggle; save / run now.
+editor with sample rules from tests: `keep`, `close`, `discard`, `sleep`, plus `url=` and `inactive>`. one rule per line; engine toggle; save / run now.
 
 ![rules tab](docs/screenshots/rules.png)
+
+### sleep
+
+slept tabs show the original title and url (plain text). reload restores the page; nothing goes to graveyard.
+
+![slept tab](docs/screenshots/sleep.png)
 
 ### graveyard
 
@@ -22,7 +28,7 @@ closed tabs land here. click a title to restore. grouped by day with the rule th
 
 ### logs
 
-plain-text dev log in storage — cycles, closes, restores. not a per-tab audit trail.
+plain-text dev log in storage — cycles, closes, sleeps, restores. not a per-tab audit trail.
 
 ![logs tab](docs/screenshots/logs.png)
 
