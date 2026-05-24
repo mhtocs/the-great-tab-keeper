@@ -1,7 +1,7 @@
 # The Great Tab Keeper
 <img src="docs/chibi/chibi.png" width="500" height="500" alt="chibi">
 
-chrome extension: plain-text tab rules, scheduled cleanup, archive restore, dev logs.
+Reduce tab clutter in chrome using plain-text tab rules, scheduled cleanup, archive restore.
 
 open the dashboard from the toolbar icon. rules run on an alarm; you can also hit **run now**.
 
@@ -23,8 +23,6 @@ to update later, download a newer zip, remove the old unpacked extension in chro
 see [setup](#setup). after `npm run build`, use the same **load unpacked** step and choose the `dist` folder in the repo.
 
 ## screenshots
-
-captured from the built extension in headed chromium (`npm run screenshots:readme`).
 
 ### rules
 
@@ -112,7 +110,3 @@ github actions builds, tests, and attaches `the-great-tab-keeper-v0.0.1.zip`.
 | `npm run verify` | build + unit + ui + lint + e2e |
 | `npm run screenshots:readme` | refresh `docs/screenshots/` for this file |
 | `./scripts/package-extension.sh` | zip `dist/` to `the-great-tab-keeper-v<version>.zip` |
-
-## license
-
-MIT. see [LICENSE](LICENSE).
