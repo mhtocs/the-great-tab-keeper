@@ -14,6 +14,7 @@ export type ActionContext = {
 
 export type ActionResult = {
   tabRemoved: boolean
+  tabDiscarded?: boolean
   graveyardEntryId?: string
 }
 

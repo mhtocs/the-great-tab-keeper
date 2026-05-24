@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>slept · tabcleaner</title>
+  </head>
+  <body>
+    <main
+      class="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 p-6"
+    >
+      <p class="text-sm text-gray-600">slept by tabcleaner</p>
+      <button
+        type="button"
+        id="reload"
+        class="rounded border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        reload
+      </button>
+      <p id="error" class="text-sm text-red-600" hidden></p>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

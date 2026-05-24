@@ -38,6 +38,7 @@ function ports(overrides: Partial<EvaluationCyclePorts> = {}): EvaluationCyclePo
     },
     writeLastRun: async () => {},
     removeTab: vi.fn().mockResolvedValue(undefined),
+    sleepTab: vi.fn().mockResolvedValue(true),
     ...overrides,
   }
 }
@@ -56,6 +57,9 @@ describe('runEvaluationCycle', () => {
       skipReason: 'engine_off',
       tabsEvaluated: 0,
       actionsTaken: 0,
+      tabsClosed: 0,
+      tabsRemoved: 0,
+      tabsSlept: 0,
     })
     expect(removeTab).not.toHaveBeenCalled()
   })
@@ -68,6 +72,7 @@ describe('runEvaluationCycle', () => {
     expect(result.skipped).toBe(false)
     expect(result.tabsEvaluated).toBe(1)
     expect(result.actionsTaken).toBe(1)
+    expect(result.tabsClosed).toBe(1)
     expect(removeTab).toHaveBeenCalledWith(1)
 
     const graveyard = await p.readGraveyard()
@@ -84,7 +89,46 @@ describe('runEvaluationCycle', () => {
     const result = await runEvaluationCycle(p)
 
     expect(result.actionsTaken).toBe(1)
+    expect(result.tabsRemoved).toBe(1)
     expect(await p.readGraveyard()).toHaveLength(0)
+  })
+
+  it('sleeps tab via sleep adapter without graveyard', async () => {
+    const sleepTab = vi.fn().mockResolvedValue(true)
+    const removeTab = vi.fn()
+    const onActionMessage = vi.fn()
+    const p = ports({
+      readSettings: async () => baseSettings({ rules: ['sleep inactive>2h'] }),
+      sleepTab,
+      removeTab,
+      onActionMessage,
+    })
+    const result = await runEvaluationCycle(p)
+
+    expect(result.actionsTaken).toBe(1)
+    expect(result.tabsSlept).toBe(1)
+    expect(sleepTab).toHaveBeenCalledWith({
+      tabId: 1,
+      url: 'https://example.com/page',
+      title: 'example',
+      favicon: undefined,
+    })
+    expect(removeTab).not.toHaveBeenCalled()
+    expect(await p.readGraveyard()).toHaveLength(0)
+    expect(onActionMessage).toHaveBeenCalledWith('slept · example')
+  })
+
+  it('does not count sleep when sleep adapter returns false', async () => {
+    const sleepTab = vi.fn().mockResolvedValue(false)
+    const result = await runEvaluationCycle(
+      ports({
+        readSettings: async () => baseSettings({ rules: ['sleep inactive>2h'] }),
+        sleepTab,
+      }),
+    )
+
+    expect(result.actionsTaken).toBe(0)
+    expect(result.tabsSlept).toBe(0)
   })
 
   it('continues cycle when one tab throws', async () => {

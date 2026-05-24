@@ -21,7 +21,7 @@ const {
 
     <template v-else>
       <div class="flex items-center justify-between gap-4">
-        <p class="text-sm text-gray-600">one rule per line. actions: keep, close, discard.</p>
+        <p class="text-sm text-gray-600">one rule per line. actions: keep, close, discard, sleep.</p>
         <label
           v-if="settings"
           class="flex shrink-0 items-center gap-3 text-sm text-gray-700"

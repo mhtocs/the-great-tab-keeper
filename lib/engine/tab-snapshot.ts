@@ -9,6 +9,7 @@ export type ChromeTabSnapshot = {
   favIconUrl?: string
   pinned?: boolean
   audible?: boolean
+  discarded?: boolean
   lastAccessed?: number
 }
 
@@ -29,6 +30,7 @@ export function toTabEvaluationInput(
     pinned: tab.pinned ?? false,
     audible: tab.audible ?? false,
     active: tab.id === activeTabId,
+    discarded: tab.discarded ?? false,
     inactiveMs: inactiveMsForTab(tab, cache, nowMs),
     lastAccessedMs: lastAccessedMs(tab, cache, nowMs),
   }

@@ -3,10 +3,11 @@ import { isDestructiveAction } from '../engine/safety'
 import type { ParsedRule } from './types'
 import { specificityScore } from './specificity'
 
-// higher rank wins when specificity is tied (keep > close > discard)
+// higher rank wins when specificity is tied (keep > close > sleep > discard)
 const ACTION_RANK: Record<LifecycleAction, number> = {
-  keep: 3,
-  close: 2,
+  keep: 4,
+  close: 3,
+  sleep: 2,
   discard: 1,
 }
 
@@ -100,7 +101,7 @@ function pickBySpecificity(
   return tieBreak(a, b)
 }
 
-// destructive rules only — specificity first, then keep > close > discard
+// destructive rules only — specificity first, then keep > close > sleep > discard
 export function pickWinner(a: ParsedRule, b: ParsedRule): ParsedRule {
   return pickBySpecificity(a, b, pickByActionPrecedence)
 }

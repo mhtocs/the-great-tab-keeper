@@ -2,6 +2,7 @@ import { runTabYardEvaluationCycle } from './evaluation-runner'
 import { restoreFromGraveyard } from './graveyard-restore'
 import { registerRuntimeMessageListener } from './messages'
 import { registerSchedulerListeners, rescheduleEvaluationAlarm } from './scheduler'
+import { clearSleptTab, restoreSleptTab } from './sleep-tab'
 import { initializeExtension } from './setup'
 import { syncTabActivated, syncTabRemoved } from '../lib/activity/sync'
 import {
@@ -30,6 +31,9 @@ function registerActivityListeners(): void {
   })
 
   chrome.tabs.onRemoved.addListener((tabId) => {
+    void clearSleptTab(tabId).catch((err: unknown) => {
+      console.error('tabcleaner slept tab cleanup failed', err)
+    })
     void syncTabRemoved(activityPorts, tabId).catch((err: unknown) => {
       console.error('tabcleaner tab removed sync failed', err)
     })
@@ -42,6 +46,7 @@ registerSchedulerListeners(runTabYardEvaluationCycle)
 registerRuntimeMessageListener({
   runCycle: runTabYardEvaluationCycle,
   restoreGraveyard: restoreFromGraveyard,
+  restoreSleptTab,
   rescheduleAlarm: rescheduleEvaluationAlarm,
 })
 

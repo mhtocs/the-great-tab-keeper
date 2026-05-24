@@ -4,10 +4,13 @@ import type {
   ActivityCache,
   GraveyardEntry,
   LastRunSummary,
+  LifecycleAction,
   Settings,
 } from '../storage/schema'
-import { createActionHandlers } from './action-handlers'
+import { createActionHandlers, type SleepTabInput } from './action-handlers'
+import type { ActionResult } from './actions'
 import { evaluateTab } from './evaluator'
+import { isSleptPageUrl } from '../slept/slept-page'
 import { toTabEvaluationInput, type ChromeTabSnapshot } from './tab-snapshot'
 
 export type EvaluationCyclePorts = {
@@ -19,6 +22,8 @@ export type EvaluationCyclePorts = {
   writeGraveyard: (entries: GraveyardEntry[]) => Promise<void>
   writeLastRun: (summary: LastRunSummary) => Promise<void>
   removeTab: (tabId: number) => Promise<void>
+  sleepTab: (input: SleepTabInput) => Promise<boolean>
+  onActionMessage?: (message: string) => void | Promise<void>
   onTabError?: (tabId: number, error: unknown) => void
 }
 
@@ -28,20 +33,30 @@ export type EvaluationCycleResult = {
   rulesError?: string
   tabsEvaluated: number
   actionsTaken: number
+  tabsClosed: number
+  tabsRemoved: number
+  tabsSlept: number
 }
 
 export async function runEvaluationCycle(
   ports: EvaluationCyclePorts,
   nowMs = Date.now(),
 ): Promise<EvaluationCycleResult> {
+  const emptyCounts = {
+    tabsEvaluated: 0,
+    actionsTaken: 0,
+    tabsClosed: 0,
+    tabsRemoved: 0,
+    tabsSlept: 0,
+  }
+
   const settings = await ports.readSettings()
 
   if (!settings.engineEnabled) {
     return {
       skipped: true,
       skipReason: 'engine_off',
-      tabsEvaluated: 0,
-      actionsTaken: 0,
+      ...emptyCounts,
     }
   }
 
@@ -51,8 +66,7 @@ export async function runEvaluationCycle(
     return {
       skipped: false,
       rulesError: parsedRules.error,
-      tabsEvaluated: 0,
-      actionsTaken: 0,
+      ...emptyCounts,
     }
   }
 
@@ -63,12 +77,15 @@ export async function runEvaluationCycle(
 
   const handlers = createActionHandlers({
     removeTab: ports.removeTab,
+    sleepTab: ports.sleepTab,
     readGraveyard: ports.readGraveyard,
     writeGraveyard: ports.writeGraveyard,
   })
 
   let tabsEvaluated = 0
-  let actionsTaken = 0
+  let tabsClosed = 0
+  let tabsRemoved = 0
+  let tabsSlept = 0
 
   for (const chromeTab of tabs) {
     const tabId = chromeTab.id
@@ -77,6 +94,10 @@ export async function runEvaluationCycle(
     }
 
     try {
+      if (chromeTab.url && isSleptPageUrl(chromeTab.url)) {
+        continue
+      }
+
       const input = toTabEvaluationInput(chromeTab, activeTabId, cache, nowMs)
       if (!input) {
         continue
@@ -86,7 +107,7 @@ export async function runEvaluationCycle(
       const outcome = evaluateTab(rules, input)
 
       if (outcome.executed && outcome.resolvedAction && outcome.winner) {
-        await handlers[outcome.resolvedAction]({
+        const result = await handlers[outcome.resolvedAction]({
           tab: {
             tabId: input.tabId,
             url: input.url,
@@ -95,7 +116,23 @@ export async function runEvaluationCycle(
           },
           ruleText: outcome.winner.source,
         })
-        actionsTaken++
+        recordAction(
+          outcome.resolvedAction,
+          result,
+          input.title,
+          ports,
+          (counts) => {
+            if (counts.closed) {
+              tabsClosed++
+            }
+            if (counts.removed) {
+              tabsRemoved++
+            }
+            if (counts.slept) {
+              tabsSlept++
+            }
+          },
+        )
       }
     } catch (error) {
       ports.onTabError?.(tabId, error)
@@ -112,11 +149,41 @@ export async function runEvaluationCycle(
     await ports.writeGraveyard(pruned)
   }
 
+  const actionsTaken = tabsClosed + tabsRemoved + tabsSlept
+
   await ports.writeLastRun({
     at: nowMs,
     tabsEvaluated,
     actionsTaken,
   })
 
-  return { skipped: false, tabsEvaluated, actionsTaken }
+  return {
+    skipped: false,
+    tabsEvaluated,
+    actionsTaken,
+    tabsClosed,
+    tabsRemoved,
+    tabsSlept,
+  }
+}
+
+function recordAction(
+  action: LifecycleAction,
+  result: ActionResult,
+  title: string,
+  ports: EvaluationCyclePorts,
+  onSuccess: (counts: { closed?: boolean; removed?: boolean; slept?: boolean }) => void,
+): void {
+  if (action === 'close' && result.tabRemoved) {
+    onSuccess({ closed: true })
+    return
+  }
+  if (action === 'discard' && result.tabRemoved) {
+    onSuccess({ removed: true })
+    return
+  }
+  if (action === 'sleep' && result.tabDiscarded) {
+    onSuccess({ slept: true })
+    void ports.onActionMessage?.(`slept · ${title || 'untitled'}`)
+  }
 }

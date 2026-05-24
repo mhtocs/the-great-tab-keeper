@@ -10,6 +10,7 @@ import {
   writeLastRun,
 } from '../lib/storage/chrome-storage'
 import { queryActiveTabId, queryAllTabs, removeTabById } from './chrome-tabs'
+import { sleepTabById } from './sleep-tab'
 import { whenExtensionReady } from './setup'
 
 let cycleTail: Promise<EvaluationCycleResult | void> = Promise.resolve()
@@ -26,6 +27,10 @@ export function runTabYardEvaluationCycle(): Promise<EvaluationCycleResult> {
       writeGraveyard,
       writeLastRun,
       removeTab: removeTabById,
+      sleepTab: sleepTabById,
+      async onActionMessage(message) {
+        await appendDevLog(message)
+      },
       onTabError(tabId, error) {
         console.error('tabcleaner cycle tab error', tabId, error)
       },

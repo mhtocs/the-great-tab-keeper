@@ -9,6 +9,7 @@ describe('action handlers', () => {
     const writeGraveyard = vi.fn()
     const handlers = createActionHandlers({
       removeTab,
+      sleepTab: vi.fn(),
       readGraveyard: async () => [],
       writeGraveyard,
     })
@@ -29,6 +30,7 @@ describe('action handlers', () => {
     const writeGraveyard = vi.fn().mockResolvedValue(undefined)
     const handlers = createActionHandlers({
       removeTab,
+      sleepTab: vi.fn(),
       readGraveyard: async () => [],
       writeGraveyard,
     })
@@ -54,6 +56,7 @@ describe('action handlers', () => {
     const writeGraveyard = vi.fn()
     const handlers = createActionHandlers({
       removeTab,
+      sleepTab: vi.fn(),
       readGraveyard: async () => [],
       writeGraveyard,
     })
@@ -65,6 +68,33 @@ describe('action handlers', () => {
 
     expect(result).toEqual({ tabRemoved: true })
     expect(removeTab).toHaveBeenCalledWith(42)
+    expect(writeGraveyard).not.toHaveBeenCalled()
+  })
+
+  it('sleep shows slept page without graveyard write', async () => {
+    const removeTab = vi.fn()
+    const sleepTab = vi.fn().mockResolvedValue(true)
+    const writeGraveyard = vi.fn()
+    const handlers = createActionHandlers({
+      removeTab,
+      sleepTab,
+      readGraveyard: async () => [],
+      writeGraveyard,
+    })
+
+    const result = await handlers.sleep({
+      tab,
+      ruleText: 'sleep inactive>2h',
+    })
+
+    expect(result).toEqual({ tabRemoved: false, tabDiscarded: true })
+    expect(sleepTab).toHaveBeenCalledWith({
+      tabId: 42,
+      url: 'https://example.com',
+      title: 'example',
+      favicon: undefined,
+    })
+    expect(removeTab).not.toHaveBeenCalled()
     expect(writeGraveyard).not.toHaveBeenCalled()
   })
 })

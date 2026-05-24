@@ -95,6 +95,18 @@ describe('checkDestructiveSafety', () => {
     })
   })
 
+  it('blocks sleep on pinned tab when rule omits pinned=true', () => {
+    const rule = parseRule('sleep inactive>2h')
+    expect(rule.ok).toBe(true)
+    if (!rule.ok) {
+      return
+    }
+    expect(checkDestructiveSafety(tab({ pinned: true }), rule.rule)).toEqual({
+      allowed: false,
+      reason: 'pinned',
+    })
+  })
+
   it('allows close on plain inactive background tab', () => {
     const rule = parseRule('close inactive>2h')
     expect(rule.ok).toBe(true)

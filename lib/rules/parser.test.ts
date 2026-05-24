@@ -25,6 +25,17 @@ describe('parseRule', () => {
     }
   })
 
+  it('parses sleep with inactive duration', () => {
+    const result = parseRule('sleep inactive>2h')
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.rule.action).toBe('sleep')
+      expect(result.rule.conditions).toEqual([
+        { kind: 'inactive', value: 2, unit: 'h' },
+      ])
+    }
+  })
+
   it('parses discard with url and inactive', () => {
     const result = parseRule('discard url=*example.com* inactive>7d')
     expect(result.ok).toBe(true)

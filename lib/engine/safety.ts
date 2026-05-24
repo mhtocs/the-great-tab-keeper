@@ -8,7 +8,7 @@ export type DestructiveSafetyResult =
   | { allowed: true }
   | { allowed: false; reason: SafetyBlockReason }
 
-const DESTRUCTIVE_ACTIONS: LifecycleAction[] = ['close', 'discard']
+const DESTRUCTIVE_ACTIONS: LifecycleAction[] = ['close', 'discard', 'sleep']
 
 export function isDestructiveAction(action: LifecycleAction): boolean {
   return DESTRUCTIVE_ACTIONS.includes(action)

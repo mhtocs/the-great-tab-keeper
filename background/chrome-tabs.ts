@@ -36,3 +36,16 @@ export function removeTabById(tabId: number): Promise<void> {
     })
   })
 }
+
+export function updateTabUrl(tabId: number, url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.update(tabId, { url }, () => {
+      const err = chrome.runtime.lastError
+      if (err) {
+        reject(new Error(err.message))
+        return
+      }
+      resolve()
+    })
+  })
+}

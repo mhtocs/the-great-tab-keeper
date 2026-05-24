@@ -16,6 +16,7 @@ function tab(overrides: Record<string, unknown> = {}) {
     active: false,
     inactiveMs: THREE_HOURS_MS,
     lastAccessedMs: Date.now() - THREE_HOURS_MS,
+    discarded: false,
     ...overrides,
   }
 }
@@ -67,6 +68,32 @@ describe('evaluateTab', () => {
   it('executes close for inactive background tab with matching rule', () => {
     const outcome = evaluateTab(rulesFrom(['close inactive>2h']), tab())
     expect(outcome.resolvedAction).toBe('close')
+    expect(outcome.executed).toBe(true)
+  })
+
+  it('does not execute sleep when tab is already discarded', () => {
+    const outcome = evaluateTab(
+      rulesFrom(['sleep inactive>2h']),
+      tab({ discarded: true }),
+    )
+    expect(outcome.resolvedAction).toBe('sleep')
+    expect(outcome.executed).toBe(false)
+    expect(outcome.blockReason).toBe('discarded')
+  })
+
+  it('does not execute sleep on active tab without active=true', () => {
+    const outcome = evaluateTab(
+      rulesFrom(['sleep inactive>1h']),
+      tab({ active: true, inactiveMs: THREE_HOURS_MS }),
+    )
+    expect(outcome.resolvedAction).toBe('sleep')
+    expect(outcome.executed).toBe(false)
+    expect(outcome.blockReason).toBe('active')
+  })
+
+  it('executes sleep for inactive background tab', () => {
+    const outcome = evaluateTab(rulesFrom(['sleep inactive>2h']), tab())
+    expect(outcome.resolvedAction).toBe('sleep')
     expect(outcome.executed).toBe(true)
   })
 

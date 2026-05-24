@@ -4,8 +4,8 @@ export const EVALUATION_INTERVALS: readonly EvaluationIntervalMinutes[] = [
   1, 5, 15, 30, 60,
 ] as const
 
-// close = remove tab + graveyard; discard = remove tab only; keep = no removal
-export type LifecycleAction = 'keep' | 'close' | 'discard'
+// close = remove + graveyard; discard = remove only; sleep = chrome discard; keep = no change
+export type LifecycleAction = 'keep' | 'close' | 'discard' | 'sleep'
 
 export type Settings = {
   engineEnabled: boolean

@@ -7,7 +7,7 @@ import {
   type RuleCondition,
 } from './types'
 
-const ACTIONS: readonly LifecycleAction[] = ['keep', 'close', 'discard']
+const ACTIONS: readonly LifecycleAction[] = ['keep', 'close', 'discard', 'sleep']
 
 const INACTIVE_RE = /^inactive>(\d+)(m|h|d)$/i
 const BOOLEAN_CONDITION_RE = /^(pinned|audible|active)=(true|false)$/i

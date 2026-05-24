@@ -47,6 +47,26 @@ describe('resolveWinner', () => {
     }
   })
 
+  it('picks close over sleep when specificity is equal', () => {
+    const sleepRule = parseRule('sleep inactive>2h url=*youtube.com*')
+    const closeRule = parseRule('close inactive>2h url=*youtube.com*')
+    expect(sleepRule.ok && closeRule.ok).toBe(true)
+    if (sleepRule.ok && closeRule.ok) {
+      const winner = resolveWinner([sleepRule.rule, closeRule.rule])
+      expect(winner?.action).toBe('close')
+    }
+  })
+
+  it('picks sleep over discard when specificity is equal', () => {
+    const sleepRule = parseRule('sleep inactive>2h url=*youtube.com*')
+    const discardRule = parseRule('discard inactive>2h url=*youtube.com*')
+    expect(sleepRule.ok && discardRule.ok).toBe(true)
+    if (sleepRule.ok && discardRule.ok) {
+      const winner = resolveWinner([sleepRule.rule, discardRule.rule])
+      expect(winner?.action).toBe('sleep')
+    }
+  })
+
   // ac 9
   it('picks close over discard when specificity is equal', () => {
     const discardRule = parseRule('discard inactive>2h url=*youtube.com*')

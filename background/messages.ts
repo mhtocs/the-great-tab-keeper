@@ -1,25 +1,35 @@
 import {
   isRescheduleEvaluationAlarmMessage,
   isRestoreGraveyardMessage,
+  isRestoreSleptTabMessage,
   isRunEvaluationCycleMessage,
   type RescheduleEvaluationAlarmResponse,
+  type RestoreSleptTabResponse,
   type RunEvaluationCycleResponse,
 } from '../lib/messages'
 import type { restoreFromGraveyard } from './graveyard-restore'
 import type { rescheduleEvaluationAlarm } from './scheduler'
+import type { restoreSleptTab } from './sleep-tab'
 
 type RestoreResult = Awaited<ReturnType<typeof restoreFromGraveyard>>
 
 export type RuntimeMessageDeps = {
   runCycle: () => Promise<unknown>
   restoreGraveyard: typeof restoreFromGraveyard
+  restoreSleptTab: typeof restoreSleptTab
   rescheduleAlarm: typeof rescheduleEvaluationAlarm
 }
 
 export async function dispatchRuntimeMessage(
   message: unknown,
   deps: RuntimeMessageDeps,
-): Promise<RunEvaluationCycleResponse | RestoreResult | RescheduleEvaluationAlarmResponse | null> {
+): Promise<
+  | RunEvaluationCycleResponse
+  | RestoreResult
+  | RestoreSleptTabResponse
+  | RescheduleEvaluationAlarmResponse
+  | null
+> {
   if (isRunEvaluationCycleMessage(message)) {
     await deps.runCycle()
     return { ok: true }
@@ -32,6 +42,10 @@ export async function dispatchRuntimeMessage(
   if (isRescheduleEvaluationAlarmMessage(message)) {
     await deps.rescheduleAlarm()
     return { ok: true }
+  }
+
+  if (isRestoreSleptTabMessage(message)) {
+    return deps.restoreSleptTab(message.tabId)
   }
 
   return null
@@ -61,13 +75,21 @@ export function registerRuntimeMessageListener(deps: RuntimeMessageDeps): void {
         }
         if (isRescheduleEvaluationAlarmMessage(message)) {
           sendResponse({ ok: false })
+          return
+        }
+        if (isRestoreSleptTabMessage(message)) {
+          sendResponse({
+            ok: false,
+            error: err instanceof Error ? err.message : 'reload failed',
+          })
         }
       })
 
     return (
       isRunEvaluationCycleMessage(message) ||
       isRestoreGraveyardMessage(message) ||
-      isRescheduleEvaluationAlarmMessage(message)
+      isRescheduleEvaluationAlarmMessage(message) ||
+      isRestoreSleptTabMessage(message)
     )
   })
 }
