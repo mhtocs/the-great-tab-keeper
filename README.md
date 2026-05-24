@@ -7,7 +7,7 @@ open the dashboard from the toolbar icon. rules run automatically in background 
 
 ## how to use this extension
 
-not published to the chrome web store yet. install from a [github release](https://github.com/mhtocs/the-great-tab-keeper/releases) zip (when available) or build locally (see [setup](#setup)).
+not published to the chrome web store yet. install from a [github release](https://github.com/mhtocs/the-great-tab-keeper/releases) zip or build locally (see [setup](#setup)).
 
 ### install from a release
 
