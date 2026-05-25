@@ -1,7 +1,6 @@
 import type { SuspendedTabEntry, SuspendedTabMap } from '../suspended/types'
 
 const SUSPENDED_TABS_KEY = 'suspendedTabs'
-const LEGACY_SLEPT_TABS_KEY = 'sleptTabs'
 
 function sessionGet<T>(keys: string | string[]): Promise<Record<string, T>> {
   return new Promise((resolve, reject) => {
@@ -36,7 +35,7 @@ function normalizeSuspendedEntry(raw: unknown): SuspendedTabEntry | null {
   const entry = raw as Record<string, unknown>
   const url = entry.url
   const title = entry.title
-  const suspendedAt = entry.suspendedAt ?? entry.sleptAt
+  const suspendedAt = entry.suspendedAt
   if (typeof url !== 'string' || typeof title !== 'string' || typeof suspendedAt !== 'number') {
     return null
   }
@@ -64,8 +63,8 @@ function normalizeSuspendedMap(raw: unknown): SuspendedTabMap {
 }
 
 export async function readSuspendedTabs(): Promise<SuspendedTabMap> {
-  const result = await sessionGet<unknown>([SUSPENDED_TABS_KEY, LEGACY_SLEPT_TABS_KEY])
-  const raw = result[SUSPENDED_TABS_KEY] ?? result[LEGACY_SLEPT_TABS_KEY]
+  const result = await sessionGet<unknown>(SUSPENDED_TABS_KEY)
+  const raw = result[SUSPENDED_TABS_KEY]
   return normalizeSuspendedMap(raw)
 }
 

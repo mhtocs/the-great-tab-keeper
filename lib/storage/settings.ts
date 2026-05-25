@@ -1,5 +1,4 @@
 import { MIN_ARCHIVE_RETENTION_DAYS } from '../archive/store'
-import { migrateRuleLine } from '../rules/parser'
 import {
   type EvaluationIntervalMinutes,
   EVALUATION_INTERVALS,
@@ -75,7 +74,7 @@ export function parseSettings(raw: unknown): ParseSettingsResult {
       evaluationIntervalMinutes,
       archiveRetentionDays,
       rules: rules
-        .map((line) => migrateRuleLine(String(line)))
+        .map((line) => String(line).trim())
         .filter((line) => line.length > 0),
     },
   }

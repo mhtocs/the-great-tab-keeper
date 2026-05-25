@@ -46,7 +46,3 @@ export const STORAGE_KEYS = {
   devLog: 'devLog',
   lastRun: 'lastRun',
 } as const
-
-export const LEGACY_STORAGE_KEYS = {
-  archive: 'archive',
-} as const

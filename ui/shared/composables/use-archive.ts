@@ -61,7 +61,7 @@ export function useArchive() {
     void load()
   })
 
-  useLocalStorageKeys(['archive', 'graveyard'], load)
+  useLocalStorageKeys(['archive'], load)
 
   function goToPage(next: number) {
     page.value = Math.min(Math.max(1, next), totalPages.value)

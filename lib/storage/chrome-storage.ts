@@ -6,7 +6,7 @@ import type {
   LastRunSummary,
   Settings,
 } from './schema'
-import { LEGACY_STORAGE_KEYS, STORAGE_KEYS } from './schema'
+import { STORAGE_KEYS } from './schema'
 import { DEFAULT_SETTINGS, parseSettings } from './settings'
 
 function storageGet<T>(keys: string | string[]): Promise<Record<string, T>> {
@@ -91,12 +91,8 @@ export async function writeSettings(settings: Settings): Promise<void> {
 }
 
 export async function readArchive(): Promise<ArchiveEntry[]> {
-  const result = await storageGet<unknown>([
-    STORAGE_KEYS.archive,
-    LEGACY_STORAGE_KEYS.archive,
-  ])
-  const raw =
-    result[STORAGE_KEYS.archive] ?? result[LEGACY_STORAGE_KEYS.archive]
+  const result = await storageGet<unknown>(STORAGE_KEYS.archive)
+  const raw = result[STORAGE_KEYS.archive]
   if (!Array.isArray(raw)) {
     return []
   }

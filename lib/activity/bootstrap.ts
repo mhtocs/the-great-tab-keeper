@@ -1,5 +1,5 @@
 import type { ActivityCache } from '../storage/schema'
-import { recordTabAccess, type TabLastAccessSource } from './tracker'
+import { recordTabAccess, tabActivityKey, type TabLastAccessSource } from './tracker'
 
 // merge chrome lastAccessed into cache without overwriting newer cache entries
 export function mergeTabLastAccessedIntoCache(
@@ -15,7 +15,7 @@ export function mergeTabLastAccessedIntoCache(
     if (chromeLast <= 0) {
       continue
     }
-    const existing = next[String(tab.id)] ?? 0
+    const existing = next[tabActivityKey(tab.id)] ?? 0
     if (chromeLast > existing) {
       next = recordTabAccess(next, tab.id, chromeLast)
     }

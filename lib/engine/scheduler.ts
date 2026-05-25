@@ -2,9 +2,6 @@ import type { EvaluationIntervalMinutes } from '../storage/schema'
 
 export const EVALUATION_ALARM_NAME = 'tab-keeper-evaluate'
 
-// cleared on reschedule so upgrades do not leave a duplicate alarm firing
-export const LEGACY_EVALUATION_ALARM_NAME = 'tab-yard-evaluate'
-
 export type SchedulerAlarm = {
   periodInMinutes?: number
 }
@@ -20,7 +17,6 @@ export async function syncEvaluationAlarm(
   ports: SchedulerPorts,
   periodInMinutes: EvaluationIntervalMinutes,
 ): Promise<void> {
-  await ports.clearAlarm(LEGACY_EVALUATION_ALARM_NAME)
   await ports.clearAlarm(EVALUATION_ALARM_NAME)
   await ports.createAlarm(EVALUATION_ALARM_NAME, periodInMinutes)
 }
