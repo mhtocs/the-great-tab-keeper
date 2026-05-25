@@ -1,5 +1,5 @@
 # The Great Tab Keeper
-<img src="docs/chibi/chibi.png" width="500" height="500" alt="chibi">
+<img src="docs/chibi/chibi.png" width="300" height="300" alt="chibi">
 
 Reduce tab clutter with rules you control. Keep, archive, suspend, or discard tabs on a schedule.
 
